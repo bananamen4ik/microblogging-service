@@ -1,0 +1,6 @@
+services:
+  nginx:
+    container_name: nginx
+
+    build:
+      dockerfile: docker/nginx/Dockerfile

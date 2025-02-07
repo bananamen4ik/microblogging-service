@@ -1,0 +1,6 @@
+services:
+  nginx:
+    env_file: envs/prod/.env
+
+    ports:
+      - 80:80
