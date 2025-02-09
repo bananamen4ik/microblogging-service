@@ -4,3 +4,9 @@ services:
 
     ports:
       - 80:80
+
+  fastapi:
+    env_file: envs/prod/.env
+
+    build:
+      dockerfile: docker/fastapi/Dockerfile.prod

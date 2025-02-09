@@ -4,3 +4,9 @@ services:
 
     build:
       dockerfile: docker/nginx/Dockerfile
+
+    depends_on:
+      - fastapi
+
+  fastapi:
+    container_name: fastapi

@@ -8,3 +8,12 @@ services:
     volumes:
       - ./docker/nginx/config:/etc/nginx
       - ./static:/usr/share/nginx/app
+
+  fastapi:
+    env_file: envs/dev/.env
+
+    build:
+      dockerfile: docker/fastapi/Dockerfile.dev
+
+    volumes:
+      - ./app:/opt/app
