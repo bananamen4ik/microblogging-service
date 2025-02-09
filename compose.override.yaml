@@ -17,3 +17,6 @@ services:
 
     volumes:
       - ./app:/opt/app
+
+  postgresql:
+    env_file: envs/dev/.env

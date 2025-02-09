@@ -8,5 +8,28 @@ services:
     depends_on:
       - fastapi
 
+    restart: unless-stopped
+
   fastapi:
     container_name: fastapi
+
+    depends_on:
+      - postgresql
+
+    restart: unless-stopped
+
+  postgresql:
+    container_name: postgresql
+
+    shm_size: 128mb
+
+    build:
+      dockerfile: docker/postgresql/Dockerfile
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    restart: unless-stopped
+
+volumes:
+  pgdata:
