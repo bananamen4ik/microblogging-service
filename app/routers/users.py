@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import (
     APIRouter,
     Depends,
-    Header
+    Header,
+    status
 )
 from fastapi import HTTPException
 
@@ -26,7 +27,7 @@ async def api_create_user(
     new_user: UserOutCreate | None = await create_user(session, user)
     if not new_user:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="User not created"
         )
 

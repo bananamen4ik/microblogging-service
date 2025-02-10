@@ -2,7 +2,10 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import HTTPException
+from fastapi import (
+    HTTPException,
+    status
+)
 
 from .config import settings
 
@@ -19,7 +22,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 async def check_debug() -> bool:
     if not settings.debug:
         raise HTTPException(
-            status_code=403,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="No permission"
         )
     return True
