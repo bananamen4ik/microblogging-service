@@ -1,6 +1,4 @@
-from sqlalchemy.ext.asyncio import (
-    AsyncConnection
-)
+from sqlalchemy.ext.asyncio import AsyncConnection
 
 from ..models import *
 
