@@ -1,3 +1,5 @@
+"""Utility functions for handling custom exceptions."""
+
 from fastapi import status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -9,6 +11,7 @@ async def http_exception_handler(
         _,
         exc: StarletteHTTPException
 ) -> JSONResponse:
+    """Exception handler StarletteHTTPException."""
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -23,6 +26,7 @@ async def validation_exception_handler(
         _,
         exc: RequestValidationError
 ) -> JSONResponse:
+    """Exception handler RequestValidationError."""
     error: dict = exc.errors()[0]
 
     return JSONResponse(

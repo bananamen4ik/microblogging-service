@@ -1,3 +1,5 @@
+"""FastAPI dependencies for routers."""
+
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +14,7 @@ from app.database import async_session
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    """Complete DB session return."""
     session: AsyncSession
 
     async with async_session() as session:
@@ -19,6 +22,15 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def check_debug() -> bool:
+    """
+    Check debug mode app setting.
+
+    Returns:
+        bool: If debug mode on return True.
+
+    Raises:
+        HTTPException: If debug mode mode off.
+    """
     if not settings.debug:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

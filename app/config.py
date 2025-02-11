@@ -1,8 +1,24 @@
+"""
+Configuration settings for the application.
+
+This module contains configuration values used by the application, including
+settings for database connections, environment variables, and other system
+settings.
+"""
+
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    """
+    Configuration settings for the application.
+
+    This class is responsible for loading and validating the configuration
+    values from environment variables or default values. It uses Pydantic's
+    BaseSettings to facilitate the management of application settings.
+    """
+
     debug: bool = False
 
     # Database settings

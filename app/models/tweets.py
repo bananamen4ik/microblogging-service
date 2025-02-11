@@ -1,3 +1,5 @@
+"""Describe Tweet model in database."""
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
@@ -19,6 +21,8 @@ if TYPE_CHECKING:
 
 
 class Tweet(Base):
+    """DB Tweet model."""
+
     __tablename__ = "tweets"
 
     id: Mapped[int] = mapped_column(

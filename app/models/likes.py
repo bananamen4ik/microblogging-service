@@ -1,3 +1,5 @@
+"""Describe Like model in database."""
+
 from sqlalchemy import (
     Integer,
     ForeignKey
@@ -11,6 +13,8 @@ from app.database import Base
 
 
 class Like(Base):
+    """DB Like model."""
+
     __tablename__ = "likes"
 
     id: Mapped[int] = mapped_column(

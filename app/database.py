@@ -1,3 +1,5 @@
+"""Database settings and connections."""
+
 from urllib import parse as urllib_parse
 
 from sqlalchemy.ext.asyncio import (
@@ -12,7 +14,7 @@ from app.config import settings
 
 
 class Base(AsyncAttrs, DeclarativeBase):
-    """ Base class for sqlalchemy models """
+    """Base class for sqlalchemy models."""
 
 
 engine: AsyncEngine = create_async_engine(

@@ -1,3 +1,5 @@
+"""Describe User model in database."""
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
@@ -17,6 +19,8 @@ if TYPE_CHECKING:
 
 
 class User(Base):
+    """DB User model."""
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(

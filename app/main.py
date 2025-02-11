@@ -1,3 +1,11 @@
+"""
+Main entry point for the FastAPI application.
+
+This module initializes the FastAPI app.
+It is the starting point for running the application
+and serves as the core interface for incoming requests.
+"""
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -16,6 +24,12 @@ from app.exceptions import (
 
 @asynccontextmanager
 async def lifespan(_):
+    """
+    Initialize and shut down the FastAPI application.
+
+    This context manager handles the setup and cleanup tasks when the FastAPI
+    application starts and stops.
+    """
     await init_db()
     yield
 
