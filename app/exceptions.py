@@ -5,7 +5,10 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
-async def http_exception_handler(_, exc: StarletteHTTPException) -> JSONResponse:
+async def http_exception_handler(
+        _,
+        exc: StarletteHTTPException
+) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -16,7 +19,10 @@ async def http_exception_handler(_, exc: StarletteHTTPException) -> JSONResponse
     )
 
 
-async def validation_exception_handler(_, exc: RequestValidationError) -> JSONResponse:
+async def validation_exception_handler(
+        _,
+        exc: RequestValidationError
+) -> JSONResponse:
     error: dict = exc.errors()[0]
 
     return JSONResponse(

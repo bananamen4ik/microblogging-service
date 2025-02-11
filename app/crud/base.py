@@ -1,12 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.models import (
-    follows,
-    likes,
-    medias,
-    tweets,
-    users
-)
+from app.models import follows  # noqa: F401
+from app.models import likes  # noqa: F401
+from app.models import medias  # noqa: F401
+from app.models import tweets  # noqa: F401
+from app.models import users  # noqa: F401
+
 from app.database import (
     engine,
     Base

@@ -9,7 +9,10 @@ async def get_user(api_key: str):
     ...
 
 
-async def create_user(session: AsyncSession, user: UserInCreate) -> UserOutCreate | None:
+async def create_user(
+        session: AsyncSession,
+        user: UserInCreate
+) -> UserOutCreate | None:
     new_user: User = User(**user.model_dump())
 
     session.add(new_user)
