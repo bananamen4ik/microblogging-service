@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import (
     Integer,
     Text,
@@ -11,6 +13,9 @@ from sqlalchemy.orm import (
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class Tweet(Base):

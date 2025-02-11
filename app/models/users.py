@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import (
     Integer,
     Text
@@ -9,6 +11,9 @@ from sqlalchemy.orm import (
 )
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.tweets import Tweet
 
 
 class User(Base):
