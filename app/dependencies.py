@@ -7,9 +7,8 @@ from fastapi import (
     status
 )
 
-from .config import settings
-
-from .database import async_session
+from app.config import settings
+from app.database import async_session
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:

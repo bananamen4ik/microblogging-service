@@ -7,7 +7,7 @@ from sqlalchemy.orm import (
     mapped_column
 )
 
-from ..database import Base
+from app.database import Base
 
 
 class Follow(Base):

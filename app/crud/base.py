@@ -1,8 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from ..models import *
-
-from ..database import (
+from app.models import (
+    follows,
+    likes,
+    medias,
+    tweets,
+    users
+)
+from app.database import (
     engine,
     Base
 )

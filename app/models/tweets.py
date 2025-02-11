@@ -10,7 +10,7 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from ..database import Base
+from app.database import Base
 
 
 class Tweet(Base):

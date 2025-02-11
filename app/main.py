@@ -5,13 +5,10 @@ from fastapi.exceptions import RequestValidationError
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .config import settings
-
-from .routers import users
-
-from .crud.base import init_db
-
-from .exceptions import (
+from app.config import settings
+from app.routers import users
+from app.crud.base import init_db
+from app.exceptions import (
     http_exception_handler,
     validation_exception_handler
 )

@@ -1,4 +1,4 @@
-import urllib.parse
+from urllib import parse as urllib_parse
 
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
@@ -8,11 +8,11 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-from .config import settings
+from app.config import settings
 
 
 class Base(AsyncAttrs, DeclarativeBase):
-    pass
+    """ Base class for sqlalchemy models """
 
 
 engine: AsyncEngine = create_async_engine(
@@ -20,7 +20,7 @@ engine: AsyncEngine = create_async_engine(
         dialect=settings.db_dialect,
         driver=settings.db_driver,
         username=settings.db_username,
-        password=urllib.parse.quote_plus(settings.db_password),
+        password=urllib_parse.quote_plus(settings.db_password),
         hostname=settings.db_hostname,
         dbname=settings.db_name
     ),
