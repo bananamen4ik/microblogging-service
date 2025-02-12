@@ -25,3 +25,15 @@ async def init_db() -> None:
 
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
+
+
+async def clear_db() -> None:
+    """
+    Clear DB.
+
+    Drop all tables from database.
+    """
+    connection: AsyncConnection
+
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.drop_all)
