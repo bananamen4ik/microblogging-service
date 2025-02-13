@@ -8,6 +8,8 @@ and serves as the core interface for incoming requests.
 
 from contextlib import asynccontextmanager
 
+from typing import AsyncGenerator
+
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 
@@ -23,7 +25,7 @@ from app.exceptions import (
 
 
 @asynccontextmanager
-async def lifespan(_):
+async def lifespan(_=None) -> AsyncGenerator[None, None]:
     """
     Initialize and shut down the FastAPI application.
 

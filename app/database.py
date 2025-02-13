@@ -26,7 +26,7 @@ engine: AsyncEngine = create_async_engine(
         hostname=settings.db_hostname,
         dbname=settings.db_name
     ),
-    echo=settings.debug
+    echo=settings.db_debug
 )
 
 async_session: async_sessionmaker = async_sessionmaker(

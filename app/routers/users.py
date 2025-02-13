@@ -22,7 +22,7 @@ from app.schemas.users import (
     UserOutCreate
 )
 
-router = APIRouter(prefix="/api/users")
+router: APIRouter = APIRouter(prefix="/api/users")
 
 
 @router.post("", dependencies=[Depends(check_debug)])

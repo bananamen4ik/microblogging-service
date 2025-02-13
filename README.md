@@ -1,5 +1,18 @@
-flake8 . (проверка качества кода и покрытия документацией с дополнительными плагинами: flake8-docstrings,
-wemake-python-styleguide)
-mypy . (проверка типов)
-pytest (проверка созданных тестов)
-pytest --cov-report=term-missing --cov=. tests/ (pytest-cov - проверка на покрытие тестами)
+Проверка качества кода и покрытия документацией с дополнительными плагинами:
+
+- flake8-docstrings
+- wemake-python-styleguide
+
+`flake8 .`
+
+Проверка типов
+
+`mypy .`
+
+Проверка созданных тестов
+
+`pytest`
+
+Проверка на покрытие тестами (pytest-cov)
+
+`pytest --cov-report=term-missing --cov=. tests/`

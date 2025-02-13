@@ -25,9 +25,10 @@ class Settings(BaseSettings):
     db_dialect: str = "postgresql"
     db_driver: str = "asyncpg"
     db_hostname: str = "postgresql"
-    db_username: str = Field(default_factory=str, alias="POSTGRES_USER")
-    db_password: str = Field(default_factory=str, alias="POSTGRES_PASSWORD")
-    db_name: str = Field(default_factory=str, alias="POSTGRES_DB")
+    db_username: str = Field(default="", alias="POSTGRES_USER")
+    db_password: str = Field(default="", alias="POSTGRES_PASSWORD")
+    db_name: str = Field(default="", alias="POSTGRES_DB")
+    db_debug: bool = Field(default=False, alias="POSTGRES_DEBUG")
 
 
 settings: Settings = Settings()
