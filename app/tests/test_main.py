@@ -12,6 +12,10 @@ async def test_lifespan() -> None:
     """Checking for correct initialization and completion."""
     await clear_db()
 
-    assert await get_tables_count() == 0
+    tables_count: int | None = await get_tables_count()
+    assert tables_count is not None
+    assert tables_count == 0
     async with lifespan():
-        assert await get_tables_count() > 0
+        tables_count = await get_tables_count()
+        assert tables_count is not None
+        assert tables_count > 0

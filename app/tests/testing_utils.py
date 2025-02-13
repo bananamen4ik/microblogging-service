@@ -2,7 +2,10 @@
 
 from contextlib import asynccontextmanager
 
-from typing import AsyncGenerator
+from typing import (
+    AsyncGenerator,
+    Any
+)
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
@@ -22,20 +25,24 @@ async def reset_db() -> None:
 
 @asynccontextmanager
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    """Getting a session as context manager."""
+    """Session as context manager."""
     async for session in dep_get_session():
         yield session
 
 
-async def get_tables_count() -> int:
-    """Returns tables count."""
+async def get_tables_count() -> int | None:
+    """Tables count."""
     session: AsyncSession
 
     async with get_session() as session:
-        return int((await session.execute(
+        tables_count: Any = (await session.execute(
             text(
                 "SELECT count(table_name) "
                 "FROM information_schema.tables "
                 "WHERE table_schema = 'public'"
             )
-        )).scalar())
+        )).scalar()
+
+    if tables_count is None:
+        return None
+    return int(tables_count)

@@ -16,9 +16,9 @@ from app.tests.testing_utils import reset_db
 
 @pytest_asyncio.fixture(scope="session")
 async def client() -> AsyncGenerator[AsyncClient, None]:
+    """Test client FastAPI app."""
     async_client: AsyncClient
 
-    """Test client FastAPI app."""
     async with AsyncClient(
             transport=ASGITransport(app=app),
             base_url="http://localhost"
