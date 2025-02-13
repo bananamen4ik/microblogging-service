@@ -7,6 +7,7 @@ click==8.1.8
 coverage==7.6.12
 dnspython==2.7.0
 email_validator==2.2.0
+Faker==36.1.0
 fastapi==0.115.8
 fastapi-cli==0.0.7
 flake8==7.1.1
@@ -49,6 +50,7 @@ SQLAlchemy==2.0.38
 starlette==0.45.3
 typer==0.15.1
 typing_extensions==4.12.2
+tzdata==2025.1
 uvicorn==0.34.0
 uvloop==0.21.0
 watchfiles==1.0.4

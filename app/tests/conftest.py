@@ -1,7 +1,9 @@
 """Global fixtures and other pytest functionality."""
 
+from random import randint
 from typing import AsyncGenerator
 
+import pytest
 import pytest_asyncio
 
 from httpx import (
@@ -43,3 +45,11 @@ async def lifespan() -> AsyncGenerator[None, None]:
 async def reset_db_auto() -> None:
     """Auto reset DB."""
     await reset_db()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def faker_seed() -> int:
+    """Random seed for Faker package."""
+    seed_min: int = 0
+    seed_max: int = 10000
+    return randint(seed_min, seed_max)
