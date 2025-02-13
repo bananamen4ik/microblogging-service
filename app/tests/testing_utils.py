@@ -26,8 +26,11 @@ async def reset_db() -> None:
 @asynccontextmanager
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """Session as context manager."""
+    session: AsyncSession
+
     async for session in dep_get_session():
         yield session
+        break
 
 
 async def get_tables_count() -> int | None:
