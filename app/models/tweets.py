@@ -17,7 +17,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from app.database import Base
 
 if TYPE_CHECKING:
-    from app.models.users import User
+    from app.models.users import User  # pragma: no cover
 
 
 class Tweet(Base):

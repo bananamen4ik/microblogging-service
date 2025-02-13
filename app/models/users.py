@@ -15,7 +15,7 @@ from sqlalchemy.orm import (
 from app.database import Base
 
 if TYPE_CHECKING:
-    from app.models.tweets import Tweet
+    from app.models.tweets import Tweet  # pragma: no cover
 
 
 class User(Base):

@@ -1,4 +1,4 @@
-"""Test users router module."""
+"""Test users routers module."""
 
 import pytest
 
