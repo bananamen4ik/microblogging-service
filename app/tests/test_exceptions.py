@@ -14,9 +14,10 @@ from app.exceptions import (
     http_exception_handler,
     validation_exception_handler
 )
+from app.tests.testing_utils import LOOP_SCOPE_SESSION
 
 
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_http_exception_handler() -> None:
     """
     Client and Starlette exceptions.
@@ -41,7 +42,7 @@ async def test_http_exception_handler() -> None:
     assert isinstance(body_data["error_message"], str)
 
 
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_validation_exception_handler() -> None:
     """API validation exception."""
     json_response: JSONResponse = await validation_exception_handler(

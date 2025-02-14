@@ -5,7 +5,10 @@ from faker import Faker
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.tests.testing_utils import get_session
+from app.tests.testing_utils import (
+    get_session,
+    LOOP_SCOPE_SESSION
+)
 from app.schemas.users import (
     UserInCreate,
     UserOutCreate
@@ -13,7 +16,7 @@ from app.schemas.users import (
 from app.crud.users import create_user
 
 
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_create_user(faker: Faker) -> None:
     """Check create user."""
     session: AsyncSession

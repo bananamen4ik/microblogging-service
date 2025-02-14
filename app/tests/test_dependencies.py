@@ -11,16 +11,17 @@ from app.dependencies import (
     check_debug
 )
 from app.config import settings
+from app.tests.testing_utils import LOOP_SCOPE_SESSION
 
 
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_get_session() -> None:
     """Check returning async session."""
     async for session in get_session():
         assert isinstance(session, AsyncSession)
 
 
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_check_debug() -> None:
     """Check debug mode."""
     debug_mode_init: bool = settings.debug

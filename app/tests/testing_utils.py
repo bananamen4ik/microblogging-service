@@ -16,6 +16,8 @@ from app.crud.base import (
 )
 from app.dependencies import get_session as dep_get_session
 
+LOOP_SCOPE_SESSION: str = "session"
+
 
 async def reset_db() -> None:
     """Drop all tables and init again."""
