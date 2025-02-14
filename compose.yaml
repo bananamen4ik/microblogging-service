@@ -6,7 +6,11 @@ services:
       dockerfile: docker/nginx/Dockerfile
 
     depends_on:
-      - fastapi
+      fastapi:
+        condition: service_started
+
+    volumes:
+      - images:/opt/images_volume
 
     restart: unless-stopped
 
@@ -14,7 +18,11 @@ services:
     container_name: fastapi
 
     depends_on:
-      - postgresql
+      postgresql:
+        condition: service_started
+
+    volumes:
+      - images:/opt/images_volume
 
     restart: unless-stopped
 
@@ -33,3 +41,4 @@ services:
 
 volumes:
   pgdata:
+  images:

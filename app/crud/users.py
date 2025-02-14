@@ -1,15 +1,31 @@
 """CRUD functionality with users."""
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from app.schemas.users import UserInCreate, UserOutCreate
+from app.schemas.users import (
+    UserInCreate,
+    UserOutCreate,
+    UserSchema
+)
 from app.models.users import User
 
 
-async def get_user(api_key: str):
-    """..."""
-    ...
+async def get_user_by_api_key(
+        session: AsyncSession,
+        api_key: str
+) -> UserSchema | None:
+    """Get user by api_key."""
+    user: User | None = await session.scalar(
+        select(User).where(
+            User.api_key == api_key
+        )
+    )
+
+    if user:
+        return UserSchema.model_validate(user)
+    return None
 
 
 async def create_user(

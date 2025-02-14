@@ -34,6 +34,6 @@ async def check_debug() -> bool:
     if not settings.debug:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No permission"
+            detail="No permission."
         )
     return True

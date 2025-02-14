@@ -16,10 +16,14 @@ from app.dependencies import (
     get_session,
     check_debug
 )
-from app.crud.users import create_user
+from app.crud.users import (
+    create_user,
+    get_user_by_api_key
+)
 from app.schemas.users import (
     UserInCreate,
-    UserOutCreate
+    UserOutCreate,
+    UserSchema
 )
 
 router: APIRouter = APIRouter(prefix="/api/users")
@@ -27,8 +31,8 @@ router: APIRouter = APIRouter(prefix="/api/users")
 
 @router.post("", dependencies=[Depends(check_debug)])
 async def api_create_user(
-        user: UserInCreate,
-        session: Annotated[AsyncSession, Depends(get_session)]
+        session: Annotated[AsyncSession, Depends(get_session)],
+        user: UserInCreate
 ) -> UserOutCreate:
     """
     Endpoint to create a new user.
@@ -49,7 +53,7 @@ async def api_create_user(
     if not new_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User not created"
+            detail="User not created."
         )
 
     return new_user
@@ -57,8 +61,27 @@ async def api_create_user(
 
 @router.get("/me")
 async def api_get_me(
-        api_key: Annotated[str, Header()],
-        session: Annotated[AsyncSession, Depends(get_session)]
-) -> str:
-    """..."""
-    return api_key
+        session: Annotated[AsyncSession, Depends(get_session)],
+        api_key: Annotated[str, Header()]
+) -> dict:
+    """Get user own profile."""
+    user: UserSchema | None = await get_user_by_api_key(
+        session,
+        api_key
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The user was not found by api_key."
+        )
+
+    return {
+        "result": True,
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "followers": [],
+            "following": []
+        }
+    }

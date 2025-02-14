@@ -27,12 +27,18 @@ class UserInCreate(UserBase):
     api_key: str
 
 
-class UserOutCreate(UserInCreate):
+class UserSchema(UserBase):
     """
-    Schema for validating input data after creating a new user.
+    Schema for user.
 
     Attributes:
         id (int): Database id.
+        api_key (str): The API key, used for authentication.
     """
 
     id: int
+    api_key: str
+
+
+class UserOutCreate(UserSchema):
+    """Schema for output data after creating a new user."""

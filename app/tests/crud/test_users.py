@@ -11,9 +11,13 @@ from app.tests.testing_utils import (
 )
 from app.schemas.users import (
     UserInCreate,
-    UserOutCreate
+    UserOutCreate,
+    UserSchema
 )
-from app.crud.users import create_user
+from app.crud.users import (
+    create_user,
+    get_user_by_api_key
+)
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -47,3 +51,37 @@ async def test_create_user(faker: Faker) -> None:
         )
 
     assert new_user_res is None
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_get_user_by_api_key(faker: Faker) -> None:
+    """Check get user."""
+    session: AsyncSession
+
+    name: str = faker.name()
+    api_key: str = str(faker.uuid4())
+
+    new_user: UserInCreate = UserInCreate(
+        name=name,
+        api_key=api_key
+    )
+
+    async with get_session() as session:
+        await create_user(
+            session,
+            new_user
+        )
+
+        user: UserSchema | None = await get_user_by_api_key(
+            session,
+            api_key
+        )
+
+        assert isinstance(user, UserSchema)
+
+        user = await get_user_by_api_key(
+            session,
+            str(faker.uuid4())
+        )
+
+        assert user is None
