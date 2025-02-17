@@ -14,7 +14,10 @@ from app.exceptions import (
     http_exception_handler,
     validation_exception_handler
 )
-from app.tests.testing_utils import LOOP_SCOPE_SESSION
+from app.tests.testing_utils import (
+    LOOP_SCOPE_SESSION,
+    RESULT_KEY
+)
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -37,7 +40,7 @@ async def test_http_exception_handler() -> None:
     assert isinstance(json_response, JSONResponse)
 
     body_data: dict = json.loads(json_response.body)
-    assert isinstance(body_data["result"], bool)
+    assert isinstance(body_data[RESULT_KEY], bool)
     assert body_data["error_type"] == StarletteHTTPException.__name__
     assert isinstance(body_data["error_message"], str)
 
@@ -53,6 +56,6 @@ async def test_validation_exception_handler() -> None:
     assert isinstance(json_response, JSONResponse)
 
     body_data: dict = json.loads(json_response.body)
-    assert isinstance(body_data["result"], bool)
+    assert isinstance(body_data[RESULT_KEY], bool)
     assert body_data["error_type"] == RequestValidationError.__name__
     assert isinstance(body_data["error_message"], str)

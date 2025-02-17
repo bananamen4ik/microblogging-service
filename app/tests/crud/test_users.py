@@ -22,7 +22,7 @@ from app.crud.users import (
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_create_user(faker: Faker) -> None:
-    """Check create user."""
+    """Test create user."""
     session: AsyncSession
 
     name: str = faker.name()
@@ -55,7 +55,7 @@ async def test_create_user(faker: Faker) -> None:
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_get_user_by_api_key(faker: Faker) -> None:
-    """Check get user."""
+    """Test get user."""
     session: AsyncSession
 
     name: str = faker.name()

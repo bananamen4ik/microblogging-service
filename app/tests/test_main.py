@@ -12,7 +12,7 @@ from app.tests.testing_utils import (
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_lifespan() -> None:
-    """Checking for correct initialization and completion."""
+    """Test for correct initialization and completion."""
     await clear_db()
 
     tables_count: int | None = await get_tables_count()

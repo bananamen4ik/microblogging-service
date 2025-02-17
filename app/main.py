@@ -16,7 +16,10 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import settings
-from app.routers import users
+from app.routers import (
+    users,
+    medias
+)
 from app.crud.base import init_db
 from app.exceptions import (
     http_exception_handler,
@@ -46,3 +49,4 @@ app: FastAPI = FastAPI(
 )
 
 app.include_router(users.router)
+app.include_router(medias.router)

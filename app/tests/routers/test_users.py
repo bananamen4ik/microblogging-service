@@ -30,13 +30,14 @@ from app.schemas.users import (
 )
 from app.tests.testing_utils import (
     get_session,
-    LOOP_SCOPE_SESSION
+    LOOP_SCOPE_SESSION,
+    RESULT_KEY
 )
 from app.config import settings
 
 
 class TestAPICreateUserPostEndpoint:
-    """Check create user API post endpoint."""
+    """Test create user API post endpoint."""
 
     @pytest_asyncio.fixture(autouse=True)
     async def init(self, faker: Faker) -> None:
@@ -51,7 +52,7 @@ class TestAPICreateUserPostEndpoint:
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_create_user(self, client: AsyncClient) -> None:
-        """Check create user."""
+        """Test create user."""
         res: Response = await client.post(
             self.uri,
             json=self.new_user.model_dump()
@@ -66,7 +67,7 @@ class TestAPICreateUserPostEndpoint:
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_create_invalid_user(self, client: AsyncClient) -> None:
-        """Check create user with invalid data."""
+        """Test create user with invalid data."""
         invalid_new_user: dict = {}
         res: Response = await client.post(
             self.uri,
@@ -85,7 +86,7 @@ class TestAPICreateUserPostEndpoint:
             self,
             client: AsyncClient
     ) -> None:
-        """Check create user with an existing api_key."""
+        """Test create user with an existing api_key."""
         await client.post(
             self.uri,
             json=self.new_user.model_dump()
@@ -108,7 +109,7 @@ class TestAPICreateUserPostEndpoint:
             self,
             client: AsyncClient
     ) -> None:
-        """Check create user without debug mode."""
+        """Test create user without debug mode."""
         settings_debug: bool = settings.debug
         settings.debug = False
         res: Response = await client.post(
@@ -127,7 +128,7 @@ class TestAPICreateUserPostEndpoint:
 
 
 class TestAPIGetMeGetEndpoint:
-    """Check get user own profile API get endpoint."""
+    """Test get user own profile API get endpoint."""
 
     @pytest_asyncio.fixture(autouse=True)
     async def init(self, faker: Faker) -> None:
@@ -143,7 +144,7 @@ class TestAPIGetMeGetEndpoint:
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_get_user(self, client: AsyncClient) -> None:
-        """Check get user."""
+        """Test get user."""
         await client.post(
             self.uri_create,
             json=self.new_user.model_dump()
@@ -161,13 +162,13 @@ class TestAPIGetMeGetEndpoint:
 
         res_data_user: dict = res_data["user"]
         assert all([
-            res_data["result"] is True,
+            res_data[RESULT_KEY] is True,
             res_data_user["id"] == 1
         ])
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_get_user_error(self, client: AsyncClient) -> None:
-        """Check get user error with non-existent api_key."""
+        """Test get user error with non-existent api_key."""
         res_get: Response = await client.get(
             self.uri_get,
             headers={
@@ -180,7 +181,7 @@ class TestAPIGetMeGetEndpoint:
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_api_create_user(faker: Faker) -> None:
-    """Check create user API."""
+    """Test create user API."""
     session: AsyncSession
 
     name: str = faker.name()
@@ -208,7 +209,7 @@ async def test_api_create_user(faker: Faker) -> None:
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_api_get_me(faker: Faker) -> None:
-    """Check get user own profile."""
+    """Test get user own profile."""
     session: AsyncSession
 
     new_user: UserInCreate = UserInCreate(
@@ -229,7 +230,7 @@ async def test_api_get_me(faker: Faker) -> None:
         res_data_user: dict = res_data["user"]
 
         assert all([
-            res_data["result"] is True,
+            res_data[RESULT_KEY] is True,
             res_data_user["id"] == new_user_res.id
         ])
 

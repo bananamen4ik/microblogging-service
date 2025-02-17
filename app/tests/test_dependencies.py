@@ -16,14 +16,14 @@ from app.tests.testing_utils import LOOP_SCOPE_SESSION
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_get_session() -> None:
-    """Check returning async session."""
+    """Test returning async session."""
     async for session in get_session():
         assert isinstance(session, AsyncSession)
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_check_debug() -> None:
-    """Check debug mode."""
+    """Test debug mode."""
     debug_mode_init: bool = settings.debug
 
     settings.debug = True

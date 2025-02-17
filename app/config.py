@@ -6,6 +6,8 @@ settings for database connections, environment variables, and other system
 settings.
 """
 
+from pathlib import Path
+
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -20,6 +22,7 @@ class Settings(BaseSettings):
     """
 
     debug: bool = False
+    path_images: Path = Path("/opt/images_volume")
 
     # Database settings
     db_dialect: str = "postgresql"

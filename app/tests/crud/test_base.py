@@ -14,7 +14,7 @@ from app.tests.testing_utils import (
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_init_db() -> None:
-    """Check init db."""
+    """Test init db."""
     tables_count: int | None
 
     await clear_db()
@@ -30,7 +30,7 @@ async def test_init_db() -> None:
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_clear_db() -> None:
-    """Check clear db."""
+    """Test clear db."""
     tables_count: int | None
 
     await init_db()
