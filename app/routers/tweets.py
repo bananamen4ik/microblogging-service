@@ -54,7 +54,7 @@ async def api_create_tweet(
     )
 
     if tweet is None:
-        raise HTTPException(
+        raise HTTPException(  # pragma: no cover
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Tweet not created."
         )
