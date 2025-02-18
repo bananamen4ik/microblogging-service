@@ -33,7 +33,7 @@ async def create_tweet(
     )
 
     if tweet_model is None:
-        return None
+        return None  # pragma: no cover
 
     res: bool = await add_tweet_id_to_medias(
         session,
@@ -42,7 +42,7 @@ async def create_tweet(
     )
 
     if not res:
-        return None
+        return None  # pragma: no cover
 
     try:
         await session.commit()

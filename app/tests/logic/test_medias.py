@@ -114,6 +114,30 @@ async def test_upload_image_type_invalid(faker: Faker) -> None:
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_upload_image_invalid_user_id(faker: Faker) -> None:
+    """Test upload image."""
+    session: AsyncSession
+    image_file: UploadFile = await get_example_image_uploadfile()
+
+    async with get_session() as session:
+        user_model: User | None = await create_user(
+            session,
+            User(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            )
+        )
+        assert user_model
+
+        media: MediaSchema | None = await upload_image(
+            session,
+            user_model.id + 1,
+            image_file
+        )
+        assert media is None
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_save_media() -> None:
     """Test save media."""
     media_file: UploadFile = await get_example_image_uploadfile()

@@ -15,7 +15,7 @@ class MediaBase(BaseModel):
 
     ext: str
     user_id: int
-    tweet_id: int | None
+    tweet_id: int | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

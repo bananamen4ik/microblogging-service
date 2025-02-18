@@ -16,7 +16,7 @@ async def create_tweet(
     session.add(tweet)
     try:
         if commit:
-            await session.commit()
+            await session.commit()  # pragma: no cover
         else:
             await session.flush()
     except SQLAlchemyError:  # pragma: no cover

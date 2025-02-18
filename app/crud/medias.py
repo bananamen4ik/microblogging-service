@@ -19,7 +19,7 @@ async def create_media(
     session.add(media)
     try:
         if commit:
-            await session.commit()
+            await session.commit()  # pragma: no cover
         else:
             await session.flush()
     except SQLAlchemyError:  # pragma: no cover

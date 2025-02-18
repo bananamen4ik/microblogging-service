@@ -15,7 +15,7 @@ class TweetBase(BaseModel):
 
     user_id: int
     main_content: str
-    medias: list[int] | None
+    medias: list[int] | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
