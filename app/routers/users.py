@@ -22,9 +22,9 @@ from app.crud.users import (
 )
 from app.schemas.users import (
     UserInCreate,
-    UserOutCreate,
     UserSchema
 )
+from app.models.users import User
 
 router: APIRouter = APIRouter(prefix="/api/users")
 
@@ -33,30 +33,35 @@ router: APIRouter = APIRouter(prefix="/api/users")
 async def api_create_user(
         session: Annotated[AsyncSession, Depends(get_session)],
         user: UserInCreate
-) -> UserOutCreate:
+) -> UserSchema:
     """
     Endpoint to create a new user.
 
     Available only with debug mode on!
 
     Args:
-        user (UserInCreate): The user data to create a new user.
         session (AsyncSession): A database session.
+        user (UserInCreate): The user data to create a new user.
 
     Returns:
-        UserOutCreate: The data of the created user.
+        UserSchema: The data of the created user.
 
     Raises:
         HTTPException: If the user creation fails error is raised.
     """
-    new_user: UserOutCreate | None = await create_user(session, user)
-    if not new_user:
+    user_model: User | None = await create_user(
+        session,
+        User(**user.model_dump()),
+        commit=True
+    )
+
+    if user_model is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User not created."
         )
 
-    return new_user
+    return UserSchema.model_validate(user_model)
 
 
 @router.get("/me")
@@ -65,12 +70,12 @@ async def api_get_me(
         api_key: Annotated[str, Header()]
 ) -> dict:
     """Get user own profile."""
-    user: UserSchema | None = await get_user_by_api_key(
+    user_model: User | None = await get_user_by_api_key(
         session,
         api_key
     )
 
-    if not user:
+    if user_model is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user was not found by api_key."
@@ -79,8 +84,8 @@ async def api_get_me(
     return {
         "result": True,
         "user": {
-            "id": user.id,
-            "name": user.name,
+            "id": user_model.id,
+            "name": user_model.name,
             "followers": [],
             "following": []
         }

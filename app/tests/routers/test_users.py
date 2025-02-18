@@ -26,7 +26,7 @@ from app.routers.users import (
 )
 from app.schemas.users import (
     UserInCreate,
-    UserOutCreate
+    UserSchema
 )
 from app.tests.testing_utils import (
     get_session,
@@ -57,8 +57,9 @@ class TestAPICreateUserPostEndpoint:
             self.uri,
             json=self.new_user.model_dump()
         )
-        res_user: UserOutCreate = UserOutCreate.model_validate(res.json())
+        assert res.status_code == status.HTTP_200_OK
 
+        res_user: UserSchema = UserSchema.model_validate(res.json())
         assert all([
             res_user.id == 1,
             res_user.name == self.name,
@@ -73,8 +74,9 @@ class TestAPICreateUserPostEndpoint:
             self.uri,
             json=invalid_new_user
         )
-        res_data: Any = res.json()
+        assert res.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+        res_data: Any = res.json()
         assert all([
             isinstance(res_data, dict),
             res_data["error_type"] == RequestValidationError.__name__,
@@ -96,8 +98,9 @@ class TestAPICreateUserPostEndpoint:
             self.uri,
             json=self.new_user.model_dump()
         )
-        res_data: Any = res.json()
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
 
+        res_data: Any = res.json()
         assert all([
             isinstance(res_data, dict),
             res_data["error_type"] == HTTPException.__name__,
@@ -116,8 +119,9 @@ class TestAPICreateUserPostEndpoint:
             self.uri,
             json=self.new_user.model_dump()
         )
-        res_data: Any = res.json()
+        assert res.status_code == status.HTTP_403_FORBIDDEN
 
+        res_data: Any = res.json()
         assert all([
             isinstance(res_data, dict),
             res_data["error_type"] == HTTPException.__name__,
@@ -193,14 +197,16 @@ async def test_api_create_user(faker: Faker) -> None:
     )
 
     async with get_session() as session:
-        new_user_res: UserOutCreate = await api_create_user(
+        new_user_res: UserSchema = await api_create_user(
             session,
             new_user
         )
 
-    assert new_user_res.id == 1
-    assert new_user_res.name == name
-    assert new_user_res.api_key == api_key
+    assert all([
+        new_user_res.id == 1,
+        new_user_res.name == name,
+        new_user_res.api_key == api_key
+    ])
 
     with pytest.raises(HTTPException):
         async with get_session() as session:
@@ -218,7 +224,7 @@ async def test_api_get_me(faker: Faker) -> None:
     )
 
     async with get_session() as session:
-        new_user_res: UserOutCreate = await api_create_user(
+        new_user_res: UserSchema = await api_create_user(
             session,
             new_user
         )

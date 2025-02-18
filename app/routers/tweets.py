@@ -1,4 +1,4 @@
-"""API medias for interaction with medias."""
+"""API tweets for interaction with tweets."""
 
 from typing import Annotated
 
@@ -8,28 +8,31 @@ from fastapi import (
     Header,
     HTTPException,
     status,
-    UploadFile,
-    File
+    Body
 )
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_session
 from app.crud.users import get_user_by_api_key
+from app.schemas.tweets import (
+    TweetSchema,
+    TweetIn
+)
 from app.models.users import User
-from app.schemas.medias import MediaSchema
-from app.logic.medias import upload_image
+from app.logic.tweets import create_tweet
 
-router: APIRouter = APIRouter(prefix="/api/medias")
+router: APIRouter = APIRouter(prefix="/api/tweets")
 
 
 @router.post("")
-async def api_upload_image(
+async def api_create_tweet(
         session: Annotated[AsyncSession, Depends(get_session)],
         api_key: Annotated[str, Header()],
-        image_file: Annotated[UploadFile, File(alias="file")]
+        tweet_data: Annotated[str, Body()],
+        tweet_media_ids: Annotated[list[int] | None, Body()] = None
 ) -> dict:
-    """Upload image."""
+    """Create tweet."""
     user_model: User | None = await get_user_by_api_key(
         session,
         api_key
@@ -41,19 +44,22 @@ async def api_upload_image(
             detail="The user was not found by api_key."
         )
 
-    image: MediaSchema | None = await upload_image(
+    tweet: TweetSchema | None = await create_tweet(
         session,
-        user_model.id,
-        image_file
+        TweetIn(
+            user_id=user_model.id,
+            main_content=tweet_data,
+            medias=tweet_media_ids
+        )
     )
 
-    if image is None:
+    if tweet is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The file is not valid image."
+            detail="Tweet not created."
         )
 
     return {
         "result": True,
-        "media_id": image.id
+        "tweet_id": tweet.id
     }

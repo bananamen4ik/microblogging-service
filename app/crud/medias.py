@@ -1,76 +1,63 @@
 """CRUD functionality with medias."""
 
-from mimetypes import guess_extension
-
-from pathlib import Path
-
-from aiofiles import open as aiofiles_open
-from aiofiles.threadpool.binary import AsyncBufferedIOBase
-
-from fastapi import UploadFile
-
+from sqlalchemy import (
+    select,
+    update
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.medias import Media
-from app.config import settings
-from app.schemas.users import UserSchema
 
 
-async def upload_image(
+async def create_media(
         session: AsyncSession,
-        user: UserSchema,
-        image_file: UploadFile
-) -> int | None:
-    """Upload image."""
-    upload_dir: Path = settings.path_images
-
-    if (
-            image_file.content_type is None or
-            not image_file.content_type.startswith("image/")
-    ):
-        return None
-
-    file_ext: str | None = guess_extension(image_file.content_type)
-    if file_ext is None:
-        return None
-
-    media: Media = Media(
-        ext=file_ext[1:],
-        user_id=user.id
-    )
-
+        media: Media,
+        commit: bool = False
+) -> Media | None:
+    """Create media."""
     session.add(media)
     try:
-        await session.flush()
+        if commit:
+            await session.commit()
+        else:
+            await session.flush()
     except SQLAlchemyError:  # pragma: no cover
         return None
+    return media
 
-    media_filename: str = f"{media.id}{file_ext}"
 
-    await save_image(
-        image_file,
-        upload_dir / media_filename
+async def get_media_by_id(
+        session: AsyncSession,
+        media_id: int
+) -> Media | None:
+    """Get media by id."""
+    return await session.scalar(
+        select(
+            Media
+        ).where(
+            Media.id == media_id
+        )
     )
 
-    try:
-        await session.commit()
-    except SQLAlchemyError:  # pragma: no cover
-        Path(upload_dir / media_filename).unlink()
-        return None
 
-    return media.id
-
-
-async def save_image(
-        image_file: UploadFile,
-        path_to: str | Path
-) -> None:
-    """Save image file to path."""
-    buffer: AsyncBufferedIOBase
-
-    async with aiofiles_open(path_to, "wb") as buffer:
-        content_file: bytes = await image_file.read(1024)
-        while content_file:
-            await buffer.write(content_file)
-            content_file = await image_file.read(1024)
+async def add_tweet_id_to_medias(
+        session: AsyncSession,
+        medias: list[int],
+        tweet_id: int
+) -> bool:
+    """Add tweet id to medias."""
+    for media_id in medias:
+        try:
+            await session.execute(
+                update(
+                    Media
+                ).where(
+                    Media.id == media_id
+                ).values({
+                    Media.tweet_id: tweet_id
+                })
+            )
+        except SQLAlchemyError:  # pragma: no cover
+            return False
+    return True

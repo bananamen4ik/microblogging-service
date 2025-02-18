@@ -26,12 +26,10 @@ from app.tests.testing_utils import (
     get_session,
     get_example_image_uploadfile
 )
-from app.schemas.users import (
-    UserInCreate,
-    UserOutCreate
-)
+from app.schemas.users import UserInCreate
 from app.crud.users import create_user
 from app.routers.medias import api_upload_image
+from app.models.users import User
 
 
 class TestAPIUploadImagePostEndpoint:
@@ -57,29 +55,30 @@ class TestAPIUploadImagePostEndpoint:
         async with get_session() as session:
             assert await create_user(
                 session,
-                self.new_user
+                User(**self.new_user.model_dump()),
+                commit=True
             )
 
-        res: Response = await client.post(
-            self.uri,
-            headers={
-                "api-key": self.api_key
-            },
-            files={
-                "file": (
-                    image_file.filename,
-                    await image_file.read(),
-                    image_file.content_type
-                )
-            }
-        )
-        res_data: Any = res.json()
+            res: Response = await client.post(
+                self.uri,
+                headers={
+                    "api-key": self.api_key
+                },
+                files={
+                    "file": (
+                        image_file.filename,
+                        await image_file.read(),
+                        image_file.content_type
+                    )
+                }
+            )
+            res_data: Any = res.json()
 
-        assert all([
-            res_data,
-            res_data[RESULT_KEY],
-            res_data["media_id"] == 1
-        ])
+            assert all([
+                res_data,
+                res_data[RESULT_KEY],
+                res_data["media_id"] == 1
+            ])
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_upload_image_type(self, client: AsyncClient) -> None:
@@ -90,7 +89,7 @@ class TestAPIUploadImagePostEndpoint:
         async with get_session() as session:
             assert await create_user(
                 session,
-                self.new_user
+                User(**self.new_user.model_dump())
             )
 
         res: Response = await client.post(
@@ -143,19 +142,19 @@ async def test_api_upload_image(faker: Faker) -> None:
     """Test upload image API."""
     session: AsyncSession
     async with get_session() as session:
-        new_user: UserOutCreate | None = await create_user(
+        user_model: User | None = await create_user(
             session,
-            UserInCreate(
+            User(
                 name=faker.name(),
                 api_key=str(faker.uuid4())
             )
         )
-        assert new_user
+        assert user_model
 
         image_file: UploadFile = await get_example_image_uploadfile()
         new_media: dict = await api_upload_image(
             session,
-            new_user.api_key,
+            user_model.api_key,
             image_file
         )
         assert all([
@@ -186,18 +185,18 @@ async def test_api_upload_image_type_invalid(faker: Faker) -> None:
     image_file: UploadFile = await get_example_image_uploadfile(True)
 
     async with get_session() as session:
-        new_user: UserOutCreate | None = await create_user(
+        user_model: User | None = await create_user(
             session,
-            UserInCreate(
+            User(
                 name=faker.name(),
                 api_key=str(faker.uuid4())
             )
         )
-        assert new_user
+        assert user_model
 
         with pytest.raises(HTTPException):
             await api_upload_image(
                 session,
-                new_user.api_key,
+                user_model.api_key,
                 image_file
             )

@@ -2,126 +2,128 @@
 
 import pytest
 
-from sqlalchemy import (
-    select,
-    and_
-)
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from fastapi import UploadFile
 
 from faker import Faker
 
 from app.tests.testing_utils import (
-    STATIC_IMAGE_EXAMPLE_PATH,
     LOOP_SCOPE_SESSION,
     get_session,
-    get_example_image_uploadfile
-)
-from app.crud.medias import (
-    save_image,
-    upload_image
-)
-from app.crud.users import create_user
-from app.config import settings
-from app.schemas.users import (
-    UserInCreate,
-    UserOutCreate
 )
 from app.models.medias import Media
+from app.models.users import User
+from app.models.tweets import Tweet
+from app.crud.medias import (
+    create_media,
+    get_media_by_id,
+    add_tweet_id_to_medias
+)
+from app.crud.users import create_user
+from app.crud.tweets import create_tweet
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_upload_image(faker: Faker) -> None:
-    """Test upload image."""
+async def test_create_media(faker: Faker) -> None:
+    """Test create media."""
     session: AsyncSession
-    image_file: UploadFile = await get_example_image_uploadfile()
 
     async with get_session() as session:
-        new_user: UserOutCreate | None = await create_user(
+        user: User | None = await create_user(
             session,
-            UserInCreate(
+            User(
                 name=faker.name(),
                 api_key=str(faker.uuid4())
             )
         )
-        assert new_user
+        assert user
 
-        media_id: int | None = await upload_image(
+        media: Media | None = await create_media(
             session,
-            new_user,
-            image_file
-        )
-        assert media_id == 1
-
-        new_media: Media | None = await session.scalar(
-            select(Media).where(
-                and_(
-                    Media.id == 1,
-                    Media.user_id == 1
-                )
+            Media(
+                ext=faker.first_name(),
+                user_id=user.id
             )
         )
-        assert new_media
+        assert media
+        assert media.tweet_id is None
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_upload_image_mime_type_invalid(faker: Faker) -> None:
-    """Test upload image file without extension."""
+async def test_get_media_by_id(faker: Faker) -> None:
+    """Test get media by id."""
     session: AsyncSession
-    image_file: UploadFile = await get_example_image_uploadfile(
-        invalid_mime=True
-    )
 
     async with get_session() as session:
-        new_user: UserOutCreate | None = await create_user(
+        user: User | None = await create_user(
             session,
-            UserInCreate(
+            User(
                 name=faker.name(),
                 api_key=str(faker.uuid4())
             )
         )
-        assert new_user
+        assert user
 
-        assert await upload_image(
+        media: Media | None = await create_media(
             session,
-            new_user,
-            image_file
-        ) is None
+            Media(
+                ext=faker.first_name(),
+                user_id=user.id
+            )
+        )
+        assert media
+        assert media.tweet_id is None
+
+        media_by_id: Media | None = await get_media_by_id(
+            session,
+            media.id
+        )
+        assert media_by_id
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_upload_image_type_invalid(faker: Faker) -> None:
-    """Test upload image file type invalid."""
+async def test_add_tweet_id_to_medias(faker: Faker) -> None:
+    """Test add tweet id to medias."""
     session: AsyncSession
-    image_file: UploadFile = await get_example_image_uploadfile(True)
 
     async with get_session() as session:
-        new_user: UserOutCreate | None = await create_user(
+        user: User | None = await create_user(
             session,
-            UserInCreate(
+            User(
                 name=faker.name(),
                 api_key=str(faker.uuid4())
             )
         )
-        assert new_user
+        assert user
 
-        media_id: int | None = await upload_image(
+        tweet: Tweet | None = await create_tweet(
             session,
-            new_user,
-            image_file
+            Tweet(
+                user_id=user.id,
+                main_content=faker.text()
+            )
         )
-        assert media_id is None
+        assert tweet
 
+        media: Media | None = await create_media(
+            session,
+            Media(
+                ext=faker.first_name(),
+                user_id=user.id
+            )
+        )
+        assert media
+        assert media.tweet_id is None
 
-@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_save_image() -> None:
-    """Test save image."""
-    image_file: UploadFile = await get_example_image_uploadfile()
+        res: bool = await add_tweet_id_to_medias(
+            session,
+            [media.id],
+            tweet.id
+        )
+        assert res
 
-    await save_image(
-        image_file,
-        settings.path_images / STATIC_IMAGE_EXAMPLE_PATH.name
-    )
-
-    assert (settings.path_images / STATIC_IMAGE_EXAMPLE_PATH.name).exists()
+        media = await get_media_by_id(
+            session,
+            media.id
+        )
+        assert media
+        assert media.tweet_id == tweet.id

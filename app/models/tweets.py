@@ -36,7 +36,7 @@ class Tweet(Base):
         ForeignKey("users.id"),
         nullable=False
     )
-    tweet_data: Mapped[str] = mapped_column(
+    main_content: Mapped[str] = mapped_column(
         Text,
         nullable=False
     )

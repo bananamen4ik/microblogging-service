@@ -18,7 +18,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.config import settings
 from app.routers import (
     users,
-    medias
+    medias,
+    tweets
 )
 from app.crud.base import init_db
 from app.exceptions import (
@@ -50,3 +51,4 @@ app: FastAPI = FastAPI(
 
 app.include_router(users.router)
 app.include_router(medias.router)
+app.include_router(tweets.router)

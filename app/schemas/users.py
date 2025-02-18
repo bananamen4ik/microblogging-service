@@ -38,7 +38,3 @@ class UserSchema(UserBase):
 
     id: int
     api_key: str
-
-
-class UserOutCreate(UserSchema):
-    """Schema for output data after creating a new user."""
