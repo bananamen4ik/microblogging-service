@@ -8,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.tests.testing_utils import (
     get_session,
-    LOOP_SCOPE_SESSION
+    LOOP_SCOPE_SESSION,
+    COMMIT_PARAMETRIZE
 )
 from app.crud.users import (
     create_user,
@@ -19,7 +20,14 @@ from app.models.users import User
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_create_user(faker: Faker) -> None:
+@pytest.mark.parametrize(
+    COMMIT_PARAMETRIZE,
+    [True, False]
+)
+async def test_create_user(
+        faker: Faker,
+        commit: bool
+) -> None:
     """Test create user."""
     session: AsyncSession
 
@@ -29,7 +37,8 @@ async def test_create_user(faker: Faker) -> None:
             User(
                 name=faker.name(),
                 api_key=str(faker.uuid4())
-            )
+            ),
+            commit=commit
         )
         assert user
 

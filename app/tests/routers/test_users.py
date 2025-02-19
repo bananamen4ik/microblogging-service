@@ -31,7 +31,8 @@ from app.schemas.users import (
 from app.tests.testing_utils import (
     get_session,
     LOOP_SCOPE_SESSION,
-    RESULT_KEY
+    RESULT_KEY,
+    API_KEY
 )
 from app.config import settings
 
@@ -67,8 +68,8 @@ class TestAPICreateUserPostEndpoint:
         ])
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-    async def test_create_invalid_user(self, client: AsyncClient) -> None:
-        """Test create user with invalid data."""
+    async def test_create_user_invalid(self, client: AsyncClient) -> None:
+        """Test create user with data invalid."""
         invalid_new_user: dict = {}
         res: Response = await client.post(
             self.uri,
@@ -157,7 +158,7 @@ class TestAPIGetMeGetEndpoint:
         res_get: Response = await client.get(
             self.uri_get,
             headers={
-                "api-key": self.api_key
+                API_KEY: self.api_key
             }
         )
         res_data: Any = res_get.json()
@@ -176,7 +177,7 @@ class TestAPIGetMeGetEndpoint:
         res_get: Response = await client.get(
             self.uri_get,
             headers={
-                "api-key": self.api_key
+                API_KEY: self.api_key
             }
         )
 

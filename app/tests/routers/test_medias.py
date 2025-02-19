@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.tests.testing_utils import (
     LOOP_SCOPE_SESSION,
     RESULT_KEY,
+    API_KEY,
     get_session,
     get_example_image_uploadfile
 )
@@ -62,7 +63,7 @@ class TestAPIUploadImagePostEndpoint:
             res: Response = await client.post(
                 self.uri,
                 headers={
-                    "api-key": self.api_key
+                    API_KEY: self.api_key
                 },
                 files={
                     "file": (
@@ -95,7 +96,7 @@ class TestAPIUploadImagePostEndpoint:
         res: Response = await client.post(
             self.uri,
             headers={
-                "api-key": self.api_key
+                API_KEY: self.api_key
             },
             files={
                 "file": (
@@ -119,7 +120,7 @@ class TestAPIUploadImagePostEndpoint:
         res: Response = await client.post(
             self.uri,
             headers={
-                "api-key": self.api_key
+                API_KEY: self.api_key
             },
             files={
                 "file": (

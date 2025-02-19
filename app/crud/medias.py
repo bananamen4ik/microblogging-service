@@ -19,10 +19,10 @@ async def create_media(
     session.add(media)
     try:
         if commit:
-            await session.commit()  # pragma: no cover
+            await session.commit()
         else:
             await session.flush()
-    except SQLAlchemyError:  # pragma: no cover
+    except SQLAlchemyError:
         return None
     return media
 
@@ -44,7 +44,8 @@ async def get_media_by_id(
 async def add_tweet_id_to_medias(
         session: AsyncSession,
         medias: list[int],
-        tweet_id: int
+        tweet_id: int,
+        commit: bool = False
 ) -> bool:
     """Add tweet id to medias."""
     for media_id in medias:
@@ -58,6 +59,14 @@ async def add_tweet_id_to_medias(
                     Media.tweet_id: tweet_id
                 })
             )
+        except SQLAlchemyError:  # pragma: no cover
+            return False
+
+        try:
+            if commit:
+                await session.commit()
+            else:
+                await session.flush()
         except SQLAlchemyError:  # pragma: no cover
             return False
     return True

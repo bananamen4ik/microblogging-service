@@ -120,8 +120,8 @@ async def test_delete_tweet_user_not_owner(faker: Faker) -> None:
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_delete_tweet_invalid_media_id(faker: Faker) -> None:
-    """Test delete tweet with invalid media id."""
+async def test_delete_tweet_media_id_invalid(faker: Faker) -> None:
+    """Test delete tweet with media id invalid."""
     session: AsyncSession
     async with get_session() as session:
         tweet: Tweet = await get_tweet(

@@ -31,7 +31,8 @@ from app.tests.testing_utils import (
 from app.tests.crud.test_tweets import get_tweet
 from app.routers.tweets import (
     api_create_tweet,
-    api_delete_tweet
+    api_delete_tweet,
+    api_add_like_tweet
 )
 from app.models.users import User
 from app.models.tweets import Tweet
@@ -90,12 +91,12 @@ class TestAPICreateTweetPostEndpoint:
             ])
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-    async def test_create_tweet_invalid_user(
+    async def test_create_tweet_user_invalid(
             self,
             client: AsyncClient,
             faker: Faker
     ) -> None:
-        """Test create tweet with invalid user."""
+        """Test create tweet with user invalid."""
         res: Response = await client.post(
             self.uri,
             headers={
@@ -156,12 +157,12 @@ class TestAPIDeleteTweetDeleteEndpoint:
             assert res_data[RESULT_KEY]
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-    async def test_delete_tweet_invalid_user(
+    async def test_delete_tweet_user_invalid(
             self,
             client: AsyncClient,
             faker: Faker
     ) -> None:
-        """Test delete tweet with invalid user."""
+        """Test delete tweet with user invalid."""
         session: AsyncSession
 
         async with get_session() as session:
@@ -173,6 +174,76 @@ class TestAPIDeleteTweetDeleteEndpoint:
 
             res: Response = await client.delete(
                 str(self.uri / str(tweet.id)),
+                headers={
+                    API_KEY: str(faker.uuid4())
+                }
+            )
+            res_data: Any = res.json()
+
+            assert res_data
+            assert not res_data[RESULT_KEY]
+            assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+
+class TestAPIAddLikeTweetPostEndpoint:
+    """Test add like tweet API post endpoint."""
+
+    @pytest_asyncio.fixture(autouse=True)
+    async def init(self) -> None:
+        """Global variables for tests."""
+        self.uri: Path = Path("/api/tweets")
+
+    @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+    async def test_add_like_tweet(
+            self,
+            client: AsyncClient,
+            faker: Faker
+    ) -> None:
+        """Test add like tweet."""
+        session: AsyncSession
+
+        async with get_session() as session:
+            tweet: Tweet = await get_tweet(
+                session,
+                faker
+            )
+            await session.commit()
+
+            user: User | None = await get_user_by_id(
+                session,
+                tweet.user_id
+            )
+            assert user
+
+            res: Response = await client.post(
+                str(self.uri / str(tweet.id) / "likes"),
+                headers={
+                    API_KEY: user.api_key
+                }
+            )
+            res_data: Any = res.json()
+
+            assert res_data
+            assert res_data[RESULT_KEY]
+
+    @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+    async def test_add_like_tweet_user_invalid(
+            self,
+            client: AsyncClient,
+            faker: Faker
+    ) -> None:
+        """Test add like tweet with user invalid."""
+        session: AsyncSession
+
+        async with get_session() as session:
+            tweet: Tweet = await get_tweet(
+                session,
+                faker
+            )
+            await session.commit()
+
+            res: Response = await client.post(
+                str(self.uri / str(tweet.id) / "likes"),
                 headers={
                     API_KEY: str(faker.uuid4())
                 }
@@ -210,8 +281,8 @@ async def test_api_create_tweet(faker: Faker) -> None:
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_api_create_tweet_invalid_user(faker: Faker) -> None:
-    """Test api create tweet."""
+async def test_api_create_tweet_user_invalid(faker: Faker) -> None:
+    """Test api create tweet with user invalid."""
     session: AsyncSession
     async with get_session() as session:
         with pytest.raises(HTTPException):
@@ -246,8 +317,8 @@ async def test_api_delete_tweet(faker: Faker) -> None:
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_api_delete_tweet_invalid_user(faker: Faker) -> None:
-    """Test api delete tweet with invalid user."""
+async def test_api_delete_tweet_user_invalid(faker: Faker) -> None:
+    """Test api delete tweet with user invalid."""
     session: AsyncSession
     async with get_session() as session:
         tweet: Tweet = await get_tweet(
@@ -280,6 +351,70 @@ async def test_api_delete_tweet_invalid(faker: Faker) -> None:
 
         with pytest.raises(HTTPException):
             await api_delete_tweet(
+                session,
+                user.api_key,
+                tweet.id + 1
+            )
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_api_add_like_tweet(faker: Faker) -> None:
+    """Test api add like to tweet."""
+    session: AsyncSession
+    async with get_session() as session:
+        tweet: Tweet = await get_tweet(
+            session,
+            faker
+        )
+        user: User | None = await get_user_by_id(
+            session,
+            tweet.user_id
+        )
+        assert user
+
+        res: dict = await api_add_like_tweet(
+            session,
+            user.api_key,
+            tweet.id
+        )
+        assert res[RESULT_KEY]
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_api_add_like_tweet_user_invalid(faker: Faker) -> None:
+    """Test api add like to tweet with user invalid."""
+    session: AsyncSession
+    async with get_session() as session:
+        tweet: Tweet = await get_tweet(
+            session,
+            faker
+        )
+
+        with pytest.raises(HTTPException):
+            await api_add_like_tweet(
+                session,
+                str(faker.uuid4()),
+                tweet.id
+            )
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_api_add_like_tweet_invalid(faker: Faker) -> None:
+    """Test api add like to tweet with tweet invalid."""
+    session: AsyncSession
+    async with get_session() as session:
+        tweet: Tweet = await get_tweet(
+            session,
+            faker
+        )
+        user: User | None = await get_user_by_id(
+            session,
+            tweet.user_id
+        )
+        assert user
+
+        with pytest.raises(HTTPException):
+            await api_add_like_tweet(
                 session,
                 user.api_key,
                 tweet.id + 1

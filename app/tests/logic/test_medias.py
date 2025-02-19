@@ -117,8 +117,8 @@ async def test_upload_image_type_invalid(faker: Faker) -> None:
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_upload_image_invalid_user_id(faker: Faker) -> None:
-    """Test upload image."""
+async def test_upload_image_user_id_invalid(faker: Faker) -> None:
+    """Test upload image with user id invalid."""
     session: AsyncSession
     image_file: UploadFile = await get_example_image_uploadfile()
 
@@ -169,7 +169,7 @@ async def test_delete_media_files() -> None:
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
 async def test_get_media_filename_by_id(faker: Faker) -> None:
-    """Test upload image."""
+    """Test get media filename by id."""
     session: AsyncSession
 
     async with get_session() as session:

@@ -30,7 +30,7 @@ async def create_user(
             await session.commit()
         else:
             await session.flush()
-    except SQLAlchemyError:  # pragma: no cover
+    except SQLAlchemyError:
         return None
     return user
 

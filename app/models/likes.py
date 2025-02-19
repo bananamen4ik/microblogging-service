@@ -2,7 +2,8 @@
 
 from sqlalchemy import (
     Integer,
-    ForeignKey
+    ForeignKey,
+    UniqueConstraint
 )
 from sqlalchemy.orm import (
     Mapped,
@@ -16,6 +17,13 @@ class Like(Base):
     """DB Like model."""
 
     __tablename__ = "likes"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "tweet_id",
+            name="uq_user_tweet"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -30,6 +38,6 @@ class Like(Base):
     )
     tweet_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("tweets.id"),
+        ForeignKey("tweets.id", ondelete="CASCADE"),
         nullable=False
     )

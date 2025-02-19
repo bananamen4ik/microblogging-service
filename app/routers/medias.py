@@ -19,6 +19,7 @@ from app.crud.users import get_user_by_api_key
 from app.models.users import User
 from app.schemas.medias import MediaSchema
 from app.logic.medias import upload_image
+from app.config import RESULT_KEY
 
 router: APIRouter = APIRouter(prefix="/api/medias")
 
@@ -54,6 +55,6 @@ async def api_upload_image(
         )
 
     return {
-        "result": True,
+        RESULT_KEY: True,
         "media_id": image.id
     }

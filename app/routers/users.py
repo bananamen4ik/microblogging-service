@@ -25,6 +25,7 @@ from app.schemas.users import (
     UserSchema
 )
 from app.models.users import User
+from app.config import RESULT_KEY
 
 router: APIRouter = APIRouter(prefix="/api/users")
 
@@ -82,7 +83,7 @@ async def api_get_me(
         )
 
     return {
-        "result": True,
+        RESULT_KEY: True,
         "user": {
             "id": user_model.id,
             "name": user_model.name,

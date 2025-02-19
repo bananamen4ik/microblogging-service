@@ -8,6 +8,7 @@ from faker import Faker
 
 from app.tests.testing_utils import (
     LOOP_SCOPE_SESSION,
+    COMMIT_PARAMETRIZE,
     get_session,
 )
 from app.models.medias import Media
@@ -23,7 +24,14 @@ from app.crud.tweets import create_tweet
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_create_media(faker: Faker) -> None:
+@pytest.mark.parametrize(
+    COMMIT_PARAMETRIZE,
+    [True, False]
+)
+async def test_create_media(
+        faker: Faker,
+        commit: bool
+) -> None:
     """Test create media."""
     session: AsyncSession
 
@@ -42,7 +50,8 @@ async def test_create_media(faker: Faker) -> None:
             Media(
                 ext=faker.first_name(),
                 user_id=user.id
-            )
+            ),
+            commit=commit
         )
         assert media
         assert media.tweet_id is None
@@ -81,7 +90,14 @@ async def test_get_media_by_id(faker: Faker) -> None:
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
-async def test_add_tweet_id_to_medias(faker: Faker) -> None:
+@pytest.mark.parametrize(
+    COMMIT_PARAMETRIZE,
+    [True, False]
+)
+async def test_add_tweet_id_to_medias(
+        faker: Faker,
+        commit: bool
+) -> None:
     """Test add tweet id to medias."""
     session: AsyncSession
 
@@ -117,7 +133,8 @@ async def test_add_tweet_id_to_medias(faker: Faker) -> None:
         res: bool = await add_tweet_id_to_medias(
             session,
             [media.id],
-            tweet.id
+            tweet.id,
+            commit=commit
         )
         assert res
 

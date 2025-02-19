@@ -16,15 +16,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_session
 from app.crud.users import get_user_by_api_key
+from app.crud.tweets import add_like_tweet
 from app.schemas.tweets import (
     TweetSchema,
     TweetIn
 )
 from app.models.users import User
+from app.models.likes import Like
 from app.logic.tweets import (
     create_tweet,
     delete_tweet
 )
+from app.config import RESULT_KEY
 
 router: APIRouter = APIRouter(prefix="/api/tweets")
 
@@ -64,7 +67,7 @@ async def api_create_tweet(
         )
 
     return {
-        "result": True,
+        RESULT_KEY: True,
         "tweet_id": tweet.id
     }
 
@@ -100,5 +103,43 @@ async def api_delete_tweet(
         )
 
     return {
-        "result": True
+        RESULT_KEY: True
+    }
+
+
+@router.post("/{tweet_id}/likes")
+async def api_add_like_tweet(
+        session: Annotated[AsyncSession, Depends(get_session)],
+        api_key: Annotated[str, Header()],
+        tweet_id: Annotated[int, Path()]
+) -> dict:
+    """Add like to tweet."""
+    user_model: User | None = await get_user_by_api_key(
+        session,
+        api_key
+    )
+
+    if user_model is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The user was not found by api_key."
+        )
+
+    like: Like | None = await add_like_tweet(
+        session,
+        Like(
+            user_id=user_model.id,
+            tweet_id=tweet_id
+        ),
+        commit=True
+    )
+
+    if like is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Couldn't like it."
+        )
+
+    return {
+        RESULT_KEY: True
     }

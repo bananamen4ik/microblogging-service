@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.tweets import Tweet
+from app.models.likes import Like
 
 
 async def create_tweet(
@@ -19,10 +20,10 @@ async def create_tweet(
     session.add(tweet)
     try:
         if commit:
-            await session.commit()  # pragma: no cover
+            await session.commit()
         else:
             await session.flush()
-    except SQLAlchemyError:  # pragma: no cover
+    except SQLAlchemyError:
         return None
     return tweet
 
@@ -58,9 +59,26 @@ async def delete_tweet_by_id(
 
     try:
         if commit:
-            await session.commit()  # pragma: no cover
+            await session.commit()
         else:
             await session.flush()
     except SQLAlchemyError:  # pragma: no cover
         return False
     return True
+
+
+async def add_like_tweet(
+        session: AsyncSession,
+        like: Like,
+        commit: bool = False
+) -> Like | None:
+    """Add like to tweet."""
+    session.add(like)
+    try:
+        if commit:
+            await session.commit()
+        else:
+            await session.flush()
+    except SQLAlchemyError:
+        return None
+    return like
