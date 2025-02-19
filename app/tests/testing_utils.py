@@ -32,6 +32,7 @@ from app.config import settings
 
 LOOP_SCOPE_SESSION: str = "session"
 RESULT_KEY: str = "result"
+API_KEY: str = "api-key"
 
 STATIC_DIR: Path = Path(__file__).parent / "static"
 STATIC_IMAGE_EXAMPLE_PATH: Path = STATIC_DIR / "image_example.jpg"

@@ -15,7 +15,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.models.medias import Media
 from app.config import settings
 from app.schemas.medias import MediaSchema
-from app.crud.medias import create_media
+from app.crud.medias import (
+    create_media,
+    get_media_by_id
+)
 
 
 async def upload_image(
@@ -74,3 +77,29 @@ async def save_media(
         while content_file:
             await buffer.write(content_file)
             content_file = await media_file.read(1024)
+
+
+async def delete_media_files(media_filenames: list[str]) -> None:
+    """Delete media files by media filenames."""
+    media_filename: str
+    path_to_medias: Path = settings.path_images
+
+    for media_filename in media_filenames:
+        path_to_file: Path = path_to_medias / media_filename
+        path_to_file.unlink()
+
+
+async def get_media_filename_by_id(
+        session: AsyncSession,
+        media_id: int
+) -> str | None:
+    """Get media filename by media id."""
+    media: Media | None = await get_media_by_id(
+        session,
+        media_id
+    )
+
+    if media is None:
+        return None
+
+    return f"{media.id}.{media.ext}"

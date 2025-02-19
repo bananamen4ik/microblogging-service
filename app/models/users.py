@@ -1,21 +1,15 @@
 """Describe User model in database."""
 
-from typing import TYPE_CHECKING
-
 from sqlalchemy import (
     Integer,
     Text
 )
 from sqlalchemy.orm import (
     Mapped,
-    mapped_column,
-    relationship
+    mapped_column
 )
 
 from app.database import Base
-
-if TYPE_CHECKING:
-    from app.models.tweets import Tweet  # pragma: no cover
 
 
 class User(Base):
@@ -38,5 +32,3 @@ class User(Base):
         Text,
         nullable=False
     )
-
-    tweets: Mapped[list["Tweet"]] = relationship(back_populates="user")

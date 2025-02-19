@@ -35,6 +35,6 @@ class Media(Base):
     )
     tweet_id: Mapped[int | None] = mapped_column(
         Integer,
-        ForeignKey("tweets.id"),
+        ForeignKey("tweets.id", ondelete="CASCADE"),
         nullable=True
     )

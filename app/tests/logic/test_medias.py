@@ -19,13 +19,16 @@ from app.tests.testing_utils import (
     get_example_image_uploadfile
 )
 from app.crud.users import create_user
+from app.crud.medias import create_media
 from app.config import settings
 from app.schemas.medias import MediaSchema
 from app.models.medias import Media
 from app.models.users import User
 from app.logic.medias import (
     upload_image,
-    save_media
+    save_media,
+    delete_media_files,
+    get_media_filename_by_id
 )
 
 
@@ -147,3 +150,49 @@ async def test_save_media() -> None:
         settings.path_images / STATIC_IMAGE_EXAMPLE_PATH.name
     )
     assert (settings.path_images / STATIC_IMAGE_EXAMPLE_PATH.name).exists()
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_delete_media_files() -> None:
+    """Test delete media files."""
+    media_file: UploadFile = await get_example_image_uploadfile()
+
+    await save_media(
+        media_file,
+        settings.path_images / STATIC_IMAGE_EXAMPLE_PATH.name
+    )
+    assert (settings.path_images / STATIC_IMAGE_EXAMPLE_PATH.name).exists()
+
+    await delete_media_files([STATIC_IMAGE_EXAMPLE_PATH.name])
+    assert not (settings.path_images / STATIC_IMAGE_EXAMPLE_PATH.name).exists()
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_get_media_filename_by_id(faker: Faker) -> None:
+    """Test upload image."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        user_model: User | None = await create_user(
+            session,
+            User(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            )
+        )
+        assert user_model
+
+        media: Media | None = await create_media(
+            session,
+            Media(
+                ext=faker.first_name(),
+                user_id=user_model.id
+            )
+        )
+        assert media
+
+        media_filename: str | None = await get_media_filename_by_id(
+            session,
+            media.id
+        )
+        assert media_filename == f"{media.id}.{media.ext}"

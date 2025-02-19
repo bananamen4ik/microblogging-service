@@ -14,7 +14,15 @@ from app.crud.medias import (
     get_media_by_id,
     add_tweet_id_to_medias
 )
-from app.crud.tweets import create_tweet as crud_create_tweet
+from app.crud.tweets import (
+    create_tweet as crud_create_tweet,
+    get_tweet_by_id,
+    delete_tweet_by_id
+)
+from app.logic.medias import (
+    delete_media_files,
+    get_media_filename_by_id
+)
 
 
 async def create_tweet(
@@ -80,3 +88,44 @@ async def get_new_medias(
         ):
             valid_medias.append(media_id)
     return valid_medias
+
+
+async def delete_tweet(
+        session: AsyncSession,
+        user_id: int,
+        tweet_id: int
+) -> bool:
+    """Delete tweet."""
+    media_id: int
+    media_filenames: list[str] = []
+    tweet: Tweet | None = await get_tweet_by_id(
+        session,
+        tweet_id
+    )
+
+    if tweet is None or tweet.user_id != user_id:
+        return False
+
+    for media_id in (tweet.medias if tweet.medias else []):
+        media_filename: str | None = await get_media_filename_by_id(
+            session,
+            media_id
+        )
+        if media_filename is None:
+            return False
+        media_filenames.append(media_filename)
+
+    delete_res: bool = await delete_tweet_by_id(
+        session,
+        tweet_id,
+        commit=True
+    )
+
+    if not delete_res:
+        return False  # pragma: no cover
+
+    await delete_media_files(
+        media_filenames
+    )
+
+    return True

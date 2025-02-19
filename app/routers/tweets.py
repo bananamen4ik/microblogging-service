@@ -8,7 +8,8 @@ from fastapi import (
     Header,
     HTTPException,
     status,
-    Body
+    Body,
+    Path
 )
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +21,10 @@ from app.schemas.tweets import (
     TweetIn
 )
 from app.models.users import User
-from app.logic.tweets import create_tweet
+from app.logic.tweets import (
+    create_tweet,
+    delete_tweet
+)
 
 router: APIRouter = APIRouter(prefix="/api/tweets")
 
@@ -62,4 +66,39 @@ async def api_create_tweet(
     return {
         "result": True,
         "tweet_id": tweet.id
+    }
+
+
+@router.delete("/{tweet_id}")
+async def api_delete_tweet(
+        session: Annotated[AsyncSession, Depends(get_session)],
+        api_key: Annotated[str, Header()],
+        tweet_id: Annotated[int, Path()]
+) -> dict:
+    """Delete tweet."""
+    user_model: User | None = await get_user_by_api_key(
+        session,
+        api_key
+    )
+
+    if user_model is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The user was not found by api_key."
+        )
+
+    delete_result: bool = await delete_tweet(
+        session,
+        user_model.id,
+        tweet_id
+    )
+
+    if not delete_result:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The tweet cannot be deleted."
+        )
+
+    return {
+        "result": True
     }

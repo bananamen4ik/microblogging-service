@@ -7,18 +7,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.models.users import User
 
 
-async def get_user_by_api_key(
-        session: AsyncSession,
-        api_key: str
-) -> User | None:
-    """Get user by api_key."""
-    return await session.scalar(
-        select(User).where(
-            User.api_key == api_key
-        )
-    )
-
-
 async def create_user(
         session: AsyncSession,
         user: User,
@@ -45,3 +33,27 @@ async def create_user(
     except SQLAlchemyError:  # pragma: no cover
         return None
     return user
+
+
+async def get_user_by_api_key(
+        session: AsyncSession,
+        api_key: str
+) -> User | None:
+    """Get user by api_key."""
+    return await session.scalar(
+        select(User).where(
+            User.api_key == api_key
+        )
+    )
+
+
+async def get_user_by_id(
+        session: AsyncSession,
+        user_id: int
+) -> User | None:
+    """Get user by id."""
+    return await session.scalar(
+        select(User).where(
+            User.id == user_id
+        )
+    )

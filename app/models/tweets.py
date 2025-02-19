@@ -1,7 +1,5 @@
 """Describe Tweet model in database."""
 
-from typing import TYPE_CHECKING
-
 from sqlalchemy import (
     Integer,
     Text,
@@ -9,15 +7,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import (
     Mapped,
-    mapped_column,
-    relationship
+    mapped_column
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from app.database import Base
-
-if TYPE_CHECKING:
-    from app.models.users import User  # pragma: no cover
 
 
 class Tweet(Base):
@@ -44,5 +38,3 @@ class Tweet(Base):
         ARRAY(Integer),
         nullable=True
     )
-
-    user: Mapped["User"] = relationship(back_populates="tweets")
