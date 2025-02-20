@@ -19,7 +19,8 @@ from app.dependencies import (
 )
 from app.crud.users import (
     create_user,
-    get_user_by_api_key
+    get_user_by_api_key,
+    delete_follow
 )
 from app.schemas.users import (
     UserInCreate,
@@ -126,6 +127,42 @@ async def api_add_follow(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Couldn't follow."
+        )
+
+    return {
+        RESULT_KEY: True
+    }
+
+
+@router.delete("/{user_id}/follow")
+async def api_delete_follow(
+        session: Annotated[AsyncSession, Depends(get_session)],
+        api_key: Annotated[str, Header()],
+        user_id: Annotated[int, Path()]
+) -> dict:
+    """Delete follow."""
+    user_model: User | None = await get_user_by_api_key(
+        session,
+        api_key
+    )
+
+    if user_model is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=HTTP_EXCEPTION_USER_API_KEY_INVALID
+        )
+
+    res_delete: bool = await delete_follow(
+        session,
+        user_model.id,
+        user_id,
+        commit=True
+    )
+
+    if not res_delete:
+        raise HTTPException(  # pragma: no cover
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Couldn't delete follow."
         )
 
     return {

@@ -1,6 +1,9 @@
 """CRUD functionality with users."""
 
-from sqlalchemy import select
+from sqlalchemy import (
+    select,
+    delete
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -88,3 +91,30 @@ async def get_follow(
             Follow.user_id_following == follow.user_id_following
         )
     )
+
+
+async def delete_follow(
+        session: AsyncSession,
+        follower_id: int,
+        following_id: int,
+        commit: bool = False
+) -> bool:
+    """Delete follow."""
+    try:
+        await session.execute(
+            delete(Follow).where(
+                Follow.user_id_follower == follower_id,
+                Follow.user_id_following == following_id
+            )
+        )
+    except SQLAlchemyError:  # pragma: no cover
+        return False
+
+    try:
+        if commit:
+            await session.commit()
+        else:
+            await session.flush()
+    except SQLAlchemyError:  # pragma: no cover
+        return False
+    return True
