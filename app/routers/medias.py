@@ -19,7 +19,10 @@ from app.crud.users import get_user_by_api_key
 from app.models.users import User
 from app.schemas.medias import MediaSchema
 from app.logic.medias import upload_image
-from app.config import RESULT_KEY
+from app.config import (
+    RESULT_KEY,
+    HTTP_EXCEPTION_USER_API_KEY_INVALID
+)
 
 router: APIRouter = APIRouter(prefix="/api/medias")
 
@@ -39,7 +42,7 @@ async def api_upload_image(
     if user_model is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user was not found by api_key."
+            detail=HTTP_EXCEPTION_USER_API_KEY_INVALID
         )
 
     image: MediaSchema | None = await upload_image(
@@ -51,7 +54,7 @@ async def api_upload_image(
     if image is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The file is not valid image."
+            detail=HTTP_EXCEPTION_USER_API_KEY_INVALID
         )
 
     return {

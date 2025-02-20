@@ -18,7 +18,9 @@ from app.crud.tweets import (
     create_tweet,
     get_tweet_by_id,
     delete_tweet_by_id,
-    add_like_tweet
+    add_like_tweet,
+    delete_like_tweet,
+    get_tweet_like
 )
 from app.crud.users import create_user
 from app.crud.medias import (
@@ -268,3 +270,72 @@ async def test_add_like_tweet_invalid(
             commit=commit
         )
         assert like_res is None
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+@pytest.mark.parametrize(
+    COMMIT_PARAMETRIZE,
+    [True, False]
+)
+async def test_delete_like_tweet(
+        faker: Faker,
+        commit: bool
+) -> None:
+    """Test delete like in tweet."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        tweet: Tweet = await get_tweet(
+            session,
+            faker
+        )
+
+        like_res: Like | None = await add_like_tweet(
+            session,
+            Like(
+                user_id=tweet.user_id,
+                tweet_id=tweet.id
+            ),
+            commit=commit
+        )
+        assert like_res
+
+        delete_res: bool = await delete_like_tweet(
+            session,
+            like_res,
+            commit=commit
+        )
+        assert delete_res
+
+        like_res = await get_tweet_like(
+            session,
+            like_res
+        )
+        assert like_res is None
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_get_tweet_like(faker: Faker) -> None:
+    """Test get tweet like."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        tweet: Tweet = await get_tweet(
+            session,
+            faker
+        )
+
+        like_res: Like | None = await add_like_tweet(
+            session,
+            Like(
+                user_id=tweet.user_id,
+                tweet_id=tweet.id
+            )
+        )
+        assert like_res
+
+        like_res = await get_tweet_like(
+            session,
+            like_res
+        )
+        assert like_res

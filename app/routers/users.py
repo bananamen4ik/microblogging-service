@@ -25,7 +25,10 @@ from app.schemas.users import (
     UserSchema
 )
 from app.models.users import User
-from app.config import RESULT_KEY
+from app.config import (
+    RESULT_KEY,
+    HTTP_EXCEPTION_USER_API_KEY_INVALID
+)
 
 router: APIRouter = APIRouter(prefix="/api/users")
 
@@ -79,7 +82,7 @@ async def api_get_me(
     if user_model is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user was not found by api_key."
+            detail=HTTP_EXCEPTION_USER_API_KEY_INVALID
         )
 
     return {

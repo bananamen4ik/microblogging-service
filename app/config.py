@@ -12,6 +12,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 RESULT_KEY: str = "result"
+HTTP_EXCEPTION_USER_API_KEY_INVALID: str = "The user was not found by api_key."
 
 
 class Settings(BaseSettings):

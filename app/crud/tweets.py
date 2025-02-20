@@ -2,7 +2,8 @@
 
 from sqlalchemy import (
     select,
-    delete
+    delete,
+    and_
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -82,3 +83,46 @@ async def add_like_tweet(
     except SQLAlchemyError:
         return None
     return like
+
+
+async def delete_like_tweet(
+        session: AsyncSession,
+        like: Like,
+        commit: bool = False
+) -> bool:
+    """Delete like in tweet."""
+    try:
+        await session.execute(
+            delete(Like).where(
+                and_(
+                    Like.user_id == like.user_id,
+                    Like.tweet_id == like.tweet_id
+                )
+            )
+        )
+    except SQLAlchemyError:  # pragma: no cover
+        return False
+
+    try:
+        if commit:
+            await session.commit()
+        else:
+            await session.flush()
+    except SQLAlchemyError:  # pragma: no cover
+        return False
+    return True
+
+
+async def get_tweet_like(
+        session: AsyncSession,
+        like: Like
+) -> Like | None:
+    """Get tweet like."""
+    return await session.scalar(
+        select(
+            Like
+        ).where(
+            Like.user_id == like.user_id,
+            Like.tweet_id == like.tweet_id
+        )
+    )
