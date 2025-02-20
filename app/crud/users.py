@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.users import User
+from app.models.follows import Follow
 
 
 async def create_user(
@@ -55,5 +56,35 @@ async def get_user_by_id(
     return await session.scalar(
         select(User).where(
             User.id == user_id
+        )
+    )
+
+
+async def add_follow(
+        session: AsyncSession,
+        follow: Follow,
+        commit: bool = False
+) -> Follow | None:
+    """Add follow."""
+    session.add(follow)
+    try:
+        if commit:
+            await session.commit()
+        else:
+            await session.flush()
+    except SQLAlchemyError:
+        return None
+    return follow
+
+
+async def get_follow(
+        session: AsyncSession,
+        follow: Follow
+) -> Follow | None:
+    """Get follow."""
+    return await session.scalar(
+        select(Follow).where(
+            Follow.user_id_follower == follow.user_id_follower,
+            Follow.user_id_following == follow.user_id_following
         )
     )

@@ -34,7 +34,7 @@ class TestAPIUploadImagePostEndpoint:
 
     @pytest_asyncio.fixture(autouse=True)
     async def init(self, faker: Faker) -> None:
-        """Global variables for tests."""
+        """Global variables for upload image."""
         self.uri: str = "/api/medias"
         self.name: str = faker.name()
         self.api_key: str = str(faker.uuid4())

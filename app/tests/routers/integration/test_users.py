@@ -2,6 +2,8 @@
 
 from typing import Any
 
+from pathlib import Path
+
 import pytest
 import pytest_asyncio
 
@@ -35,7 +37,7 @@ class TestAPICreateUserPostEndpoint:
 
     @pytest_asyncio.fixture(autouse=True)
     async def init(self, faker: Faker) -> None:
-        """Global variables for tests."""
+        """Global variables for create user."""
         self.uri: str = "/api/users"
         self.name: str = faker.name()
         self.api_key: str = str(faker.uuid4())
@@ -130,7 +132,7 @@ class TestAPIGetMeGetEndpoint:
 
     @pytest_asyncio.fixture(autouse=True)
     async def init(self, faker: Faker) -> None:
-        """Global variables for tests."""
+        """Global variables for get me."""
         self.uri_create: str = "/api/users"
         self.uri_get: str = "/api/users/me"
         self.name: str = faker.name()
@@ -175,3 +177,67 @@ class TestAPIGetMeGetEndpoint:
         )
 
         assert res_get.status_code == status.HTTP_400_BAD_REQUEST
+
+
+class TestAPIAddFollowPostEndpoint:
+    """Test add follow API post endpoint."""
+
+    @pytest_asyncio.fixture(autouse=True)
+    async def init(self) -> None:
+        """Global variables for add follow."""
+        self.uri: Path = Path("/api/users")
+        self.uri_end: str = "follow"
+
+    @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+    async def test_add_follow(
+            self,
+            client: AsyncClient,
+            faker: Faker
+    ) -> None:
+        """Test add follow."""
+        res: Response = await client.post(
+            str(self.uri),
+            json=UserInCreate(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            ).model_dump()
+        )
+        user_follower: UserSchema = UserSchema.model_validate(res.json())
+
+        res = await client.post(
+            str(self.uri),
+            json=UserInCreate(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            ).model_dump()
+        )
+        user_following: UserSchema = UserSchema.model_validate(res.json())
+
+        res = await client.post(
+            str(self.uri / str(user_following.id) / self.uri_end),
+            headers={
+                API_KEY: user_follower.api_key
+            }
+        )
+
+        res_json: Any = res.json()
+        assert res_json
+        assert res_json[RESULT_KEY]
+
+    @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+    async def test_add_follow_user_invalid(
+            self,
+            client: AsyncClient,
+            faker: Faker
+    ) -> None:
+        """Test add follow with user invalid."""
+        res: Response = await client.post(
+            str(self.uri / str(faker.random_int()) / self.uri_end),
+            headers={
+                API_KEY: str(faker.uuid4())
+            }
+        )
+        res_json: Any = res.json()
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+        assert res_json
+        assert not res_json[RESULT_KEY]

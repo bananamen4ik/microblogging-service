@@ -6,7 +6,8 @@ from fastapi import (
     APIRouter,
     Depends,
     Header,
-    status
+    status,
+    Path
 )
 from fastapi import HTTPException
 
@@ -29,6 +30,7 @@ from app.config import (
     RESULT_KEY,
     HTTP_EXCEPTION_USER_API_KEY_INVALID
 )
+from app.logic.users import add_follow
 
 router: APIRouter = APIRouter(prefix="/api/users")
 
@@ -93,4 +95,39 @@ async def api_get_me(
             "followers": [],
             "following": []
         }
+    }
+
+
+@router.post("/{user_id}/follow")
+async def api_add_follow(
+        session: Annotated[AsyncSession, Depends(get_session)],
+        api_key: Annotated[str, Header()],
+        user_id: Annotated[int, Path()]
+) -> dict:
+    """Add follow."""
+    user_model: User | None = await get_user_by_api_key(
+        session,
+        api_key
+    )
+
+    if user_model is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=HTTP_EXCEPTION_USER_API_KEY_INVALID
+        )
+
+    res: bool = await add_follow(
+        session,
+        user_model.id,
+        user_id
+    )
+
+    if not res:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Couldn't follow."
+        )
+
+    return {
+        RESULT_KEY: True
     }

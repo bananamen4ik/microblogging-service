@@ -10,7 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.routers.users import (
     api_create_user,
-    api_get_me
+    api_get_me,
+    api_add_follow
 )
 from app.schemas.users import (
     UserInCreate,
@@ -84,4 +85,76 @@ async def test_api_get_me(faker: Faker) -> None:
             await api_get_me(
                 session,
                 str(faker.uuid4())
+            )
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_api_add_follow(faker: Faker) -> None:
+    """Test add follow API."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        user_follower: UserSchema = await api_create_user(
+            session,
+            UserInCreate(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            )
+        )
+        user_following: UserSchema = await api_create_user(
+            session,
+            UserInCreate(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            )
+        )
+
+        follow: dict = await api_add_follow(
+            session,
+            user_follower.api_key,
+            user_following.id
+        )
+        assert follow[RESULT_KEY]
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_api_add_follow_user_invalid(faker: Faker) -> None:
+    """Test add follow API with user invalid."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        with pytest.raises(HTTPException):
+            await api_add_follow(
+                session,
+                str(faker.uuid4()),
+                faker.random_int()
+            )
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_api_add_follow_following_invalid(faker: Faker) -> None:
+    """Test add follow API with following invalid."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        user_follower: UserSchema = await api_create_user(
+            session,
+            UserInCreate(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            )
+        )
+        user_following: UserSchema = await api_create_user(
+            session,
+            UserInCreate(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            )
+        )
+
+        with pytest.raises(HTTPException):
+            await api_add_follow(
+                session,
+                user_follower.api_key,
+                user_following.id + 1
             )
