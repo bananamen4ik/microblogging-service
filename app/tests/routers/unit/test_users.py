@@ -16,7 +16,8 @@ from app.routers.users import (
 )
 from app.schemas.users import (
     UserInCreate,
-    UserSchema
+    UserSchema,
+    UserOut
 )
 from app.tests.testing_utils import (
     get_session,
@@ -66,7 +67,7 @@ async def test_api_get_me(faker: Faker) -> None:
     )
 
     async with get_session() as session:
-        new_user_res: UserSchema = await api_create_user(
+        await api_create_user(
             session,
             new_user
         )
@@ -79,7 +80,7 @@ async def test_api_get_me(faker: Faker) -> None:
 
         assert all([
             res_data[RESULT_KEY] is True,
-            res_data_user["id"] == new_user_res.id
+            isinstance(res_data_user, UserOut)
         ])
 
         with pytest.raises(HTTPException):

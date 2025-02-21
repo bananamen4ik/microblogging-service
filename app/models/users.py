@@ -17,6 +17,7 @@ from app.database import Base
 if TYPE_CHECKING:  # pragma: no cover
     from app.models.tweets import Tweet
     from app.models.likes import Like
+    from app.models.follows import Follow
 
 
 class User(Base):
@@ -48,3 +49,23 @@ class User(Base):
         "Like",
         back_populates="user"
     )
+    followers: Mapped[list["Follow"]] = relationship(
+        "Follow",
+        back_populates="following",
+        foreign_keys="Follow.user_id_following"
+    )
+    following: Mapped[list["Follow"]] = relationship(
+        "Follow",
+        back_populates="follower",
+        foreign_keys="Follow.user_id_follower"
+    )
+
+    @property
+    def followers_users(self) -> list["User"]:
+        """Instead of association_proxy return connection follows-user."""
+        return [follow.follower for follow in self.followers]
+
+    @property
+    def following_users(self) -> list["User"]:
+        """Instead of association_proxy return connection follows-user."""
+        return [follow.following for follow in self.following]

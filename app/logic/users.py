@@ -8,6 +8,11 @@ from app.crud.users import (
 )
 from app.models.users import User
 from app.models.follows import Follow
+from app.schemas.users import (
+    UserOut,
+    UserFollowers,
+    UserFollowing
+)
 
 
 async def add_follow(
@@ -39,3 +44,28 @@ async def add_follow(
     if res is None:
         return False
     return True
+
+
+async def get_profile(user: User) -> UserOut:
+    """Get profile."""
+    followers: list[User] = await user.awaitable_attrs.followers_users
+    followings: list[User] = await user.awaitable_attrs.following_users
+
+    return UserOut(
+        id=user.id,
+        name=user.name,
+        followers=[
+            UserFollowers(
+                id=follower.id,
+                name=follower.name
+            )
+            for follower in followers
+        ],
+        following=[
+            UserFollowing(
+                id=following.id,
+                name=following.name
+            )
+            for following in followings
+        ]
+    )

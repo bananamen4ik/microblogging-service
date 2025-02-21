@@ -24,14 +24,18 @@ from app.crud.users import (
 )
 from app.schemas.users import (
     UserInCreate,
-    UserSchema
+    UserSchema,
+    UserOut
 )
 from app.models.users import User
 from app.config import (
     RESULT_KEY,
     HTTP_EXCEPTION_USER_API_KEY_INVALID
 )
-from app.logic.users import add_follow
+from app.logic.users import (
+    add_follow,
+    get_profile
+)
 
 router: APIRouter = APIRouter(prefix="/api/users")
 
@@ -88,14 +92,11 @@ async def api_get_me(
             detail=HTTP_EXCEPTION_USER_API_KEY_INVALID
         )
 
+    profile: UserOut = await get_profile(user_model)
+
     return {
         RESULT_KEY: True,
-        "user": {
-            "id": user_model.id,
-            "name": user_model.name,
-            "followers": [],
-            "following": []
-        }
+        "user": profile
     }
 
 

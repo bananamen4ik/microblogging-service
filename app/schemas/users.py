@@ -38,3 +38,43 @@ class UserSchema(UserBase):
 
     id: int
     api_key: str
+
+
+class UserFollowers(BaseModel):
+    """
+    Schema for user followers representation.
+
+    id (int): User id.
+    name (str): Username.
+    """
+
+    id: int
+    name: str
+
+
+class UserFollowing(BaseModel):
+    """
+    Schema for user following representation.
+
+    id (int): User id.
+    name (str): Username.
+    """
+
+    id: int
+    name: str
+
+
+class UserOut(BaseModel):
+    """
+    Schema for profile representation.
+
+    id (int): User id.
+    name (str): Username.
+    followers (list[UserFollowers]): User followers.
+    following (list[UserFollowing]): User following.
+    """
+
+    id: int
+    name: str
+    followers: list[UserFollowers]
+    following: list[UserFollowing]
