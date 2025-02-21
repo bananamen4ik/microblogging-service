@@ -12,7 +12,8 @@ from app.routers.users import (
     api_create_user,
     api_get_me,
     api_add_follow,
-    api_delete_follow
+    api_delete_follow,
+    api_get_profile_by_id
 )
 from app.schemas.users import (
     UserInCreate,
@@ -208,5 +209,39 @@ async def test_api_delete_follow_user_invalid(faker: Faker) -> None:
             await api_delete_follow(
                 session,
                 str(faker.uuid4()),
+                faker.random_int()
+            )
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_api_get_profile_by_id(faker: Faker) -> None:
+    """Test get profile by id."""
+    session: AsyncSession
+
+    new_user: UserInCreate = UserInCreate(
+        name=faker.name(),
+        api_key=str(faker.uuid4())
+    )
+
+    async with get_session() as session:
+        user: UserSchema = await api_create_user(
+            session,
+            new_user
+        )
+
+        res_data: dict = await api_get_profile_by_id(
+            session,
+            user.id
+        )
+        res_data_user: dict = res_data["user"]
+
+        assert all([
+            res_data[RESULT_KEY] is True,
+            isinstance(res_data_user, UserOut)
+        ])
+
+        with pytest.raises(HTTPException):
+            await api_get_profile_by_id(
+                session,
                 faker.random_int()
             )

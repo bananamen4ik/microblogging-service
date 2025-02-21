@@ -2,8 +2,6 @@
 
 from typing import Any
 
-from pathlib import Path
-
 import pytest
 import pytest_asyncio
 
@@ -22,7 +20,8 @@ from faker import Faker
 
 from app.schemas.users import (
     UserInCreate,
-    UserSchema
+    UserSchema,
+    UserOut
 )
 from app.tests.testing_utils import (
     LOOP_SCOPE_SESSION,
@@ -32,6 +31,7 @@ from app.tests.testing_utils import (
 from app.config import settings
 
 URI_API_USERS: str = "/api/users"
+URI_API_SLASH: str = "/"
 
 
 class TestAPICreateUserPostEndpoint:
@@ -136,7 +136,7 @@ class TestAPIGetMeGetEndpoint:
     async def init(self, faker: Faker) -> None:
         """Global variables for get me."""
         self.uri_create: str = URI_API_USERS
-        self.uri_get: str = f"{URI_API_USERS}/me"
+        self.uri_get: str = URI_API_SLASH.join([URI_API_USERS, "me"])
         self.name: str = faker.name()
         self.api_key: str = str(faker.uuid4())
         self.new_user: UserInCreate = UserInCreate(
@@ -162,10 +162,10 @@ class TestAPIGetMeGetEndpoint:
 
         assert isinstance(res_data, dict)
 
-        res_data_user: dict = res_data["user"]
+        res_data_user: UserOut = UserOut.model_validate(res_data["user"])
         assert all([
             res_data[RESULT_KEY] is True,
-            res_data_user["id"] == 1
+            res_data_user.id == 1
         ])
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -187,7 +187,7 @@ class TestAPIAddFollowPostEndpoint:
     @pytest_asyncio.fixture(autouse=True)
     async def init(self) -> None:
         """Global variables for add follow."""
-        self.uri: Path = Path(URI_API_USERS)
+        self.uri: str = URI_API_USERS
         self.uri_end: str = "follow"
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -216,7 +216,11 @@ class TestAPIAddFollowPostEndpoint:
         user_following: UserSchema = UserSchema.model_validate(res.json())
 
         res = await client.post(
-            str(self.uri / str(user_following.id) / self.uri_end),
+            URI_API_SLASH.join([
+                self.uri,
+                str(user_following.id),
+                self.uri_end
+            ]),
             headers={
                 API_KEY: user_follower.api_key
             }
@@ -234,7 +238,11 @@ class TestAPIAddFollowPostEndpoint:
     ) -> None:
         """Test add follow with user invalid."""
         res: Response = await client.post(
-            str(self.uri / str(faker.random_int()) / self.uri_end),
+            URI_API_SLASH.join([
+                self.uri,
+                str(faker.random_int()),
+                self.uri_end
+            ]),
             headers={
                 API_KEY: str(faker.uuid4())
             }
@@ -251,7 +259,7 @@ class TestAPIDeleteFollowDeleteEndpoint:
     @pytest_asyncio.fixture(autouse=True)
     async def init(self) -> None:
         """Global variables for delete follow."""
-        self.uri: Path = Path(URI_API_USERS)
+        self.uri: str = URI_API_USERS
         self.uri_end: str = "follow"
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -279,15 +287,23 @@ class TestAPIDeleteFollowDeleteEndpoint:
         )
         user_following: UserSchema = UserSchema.model_validate(res.json())
 
-        res = await client.post(
-            str(self.uri / str(user_following.id) / self.uri_end),
+        await client.post(
+            URI_API_SLASH.join([
+                self.uri,
+                str(user_following.id),
+                self.uri_end
+            ]),
             headers={
                 API_KEY: user_follower.api_key
             }
         )
 
         res = await client.delete(
-            str(self.uri / str(user_following.id) / self.uri_end),
+            URI_API_SLASH.join([
+                self.uri,
+                str(user_following.id),
+                self.uri_end
+            ]),
             headers={
                 API_KEY: user_follower.api_key
             }
@@ -304,7 +320,11 @@ class TestAPIDeleteFollowDeleteEndpoint:
     ) -> None:
         """Test delete follow with user invalid."""
         res: Response = await client.delete(
-            str(self.uri / str(faker.random_int()) / self.uri_end),
+            URI_API_SLASH.join([
+                self.uri,
+                str(faker.random_int()),
+                self.uri_end
+            ]),
             headers={
                 API_KEY: str(faker.uuid4())
             }
@@ -313,3 +333,44 @@ class TestAPIDeleteFollowDeleteEndpoint:
         assert res.status_code == status.HTTP_400_BAD_REQUEST
         assert res_json
         assert not res_json[RESULT_KEY]
+
+
+class TestAPIGetProfileByIdGetEndpoint:
+    """Test get profile by id API get endpoint."""
+
+    @pytest_asyncio.fixture(autouse=True)
+    async def init(self, faker: Faker) -> None:
+        """Global variables for get profile by id."""
+        self.uri: str = URI_API_USERS
+        self.name: str = faker.name()
+        self.api_key: str = str(faker.uuid4())
+        self.new_user: UserInCreate = UserInCreate(
+            name=self.name,
+            api_key=self.api_key
+        )
+
+    @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+    async def test_get_profile_by_id(self, client: AsyncClient) -> None:
+        """Test get profile by id."""
+        await client.post(
+            self.uri,
+            json=self.new_user.model_dump()
+        )
+
+        res_get: Response = await client.get(f"{self.uri}/1")
+        res_data: Any = res_get.json()
+
+        assert isinstance(res_data, dict)
+
+        res_data_user: UserOut = UserOut.model_validate(res_data["user"])
+        assert all([
+            res_data[RESULT_KEY] is True,
+            res_data_user.id == 1
+        ])
+
+    @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+    async def test_get_profile_by_id_error(self, client: AsyncClient) -> None:
+        """Test get profile by id with non-existent id."""
+        res_get: Response = await client.get(f"{self.uri}/1")
+
+        assert res_get.status_code == status.HTTP_400_BAD_REQUEST

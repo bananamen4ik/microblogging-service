@@ -20,7 +20,8 @@ from app.dependencies import (
 from app.crud.users import (
     create_user,
     get_user_by_api_key,
-    delete_follow
+    delete_follow,
+    get_user_by_id
 )
 from app.schemas.users import (
     UserInCreate,
@@ -168,4 +169,29 @@ async def api_delete_follow(
 
     return {
         RESULT_KEY: True
+    }
+
+
+@router.get("/{user_id}")
+async def api_get_profile_by_id(
+        session: Annotated[AsyncSession, Depends(get_session)],
+        user_id: Annotated[int, Path()]
+) -> dict:
+    """Get user profile by id."""
+    user_model: User | None = await get_user_by_id(
+        session,
+        user_id
+    )
+
+    if user_model is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User not found."
+        )
+
+    profile: UserOut = await get_profile(user_model)
+
+    return {
+        RESULT_KEY: True,
+        "user": profile
     }

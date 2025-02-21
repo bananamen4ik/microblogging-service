@@ -2,8 +2,6 @@
 
 from typing import Any
 
-from pathlib import Path
-
 import pytest
 
 import pytest_asyncio
@@ -35,6 +33,7 @@ from app.crud.users import (
 from app.schemas.users import UserInCreate
 
 URI_API_TWEETS: str = "/api/tweets"
+URI_API_SLASH: str = "/"
 
 
 class TestAPICreateTweetPostEndpoint:
@@ -115,7 +114,7 @@ class TestAPIDeleteTweetDeleteEndpoint:
     @pytest_asyncio.fixture(autouse=True)
     async def init(self) -> None:
         """Global variables for delete tweet."""
-        self.uri: Path = Path(URI_API_TWEETS)
+        self.uri: str = URI_API_TWEETS
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_delete_tweet(
@@ -140,7 +139,10 @@ class TestAPIDeleteTweetDeleteEndpoint:
             assert user
 
             res: Response = await client.delete(
-                str(self.uri / str(tweet.id)),
+                URI_API_SLASH.join([
+                    self.uri,
+                    str(tweet.id)
+                ]),
                 headers={
                     API_KEY: user.api_key
                 }
@@ -167,7 +169,10 @@ class TestAPIDeleteTweetDeleteEndpoint:
             await session.commit()
 
             res: Response = await client.delete(
-                str(self.uri / str(tweet.id)),
+                URI_API_SLASH.join([
+                    self.uri,
+                    str(tweet.id)
+                ]),
                 headers={
                     API_KEY: str(faker.uuid4())
                 }
@@ -185,7 +190,7 @@ class TestAPIAddLikeTweetPostEndpoint:
     @pytest_asyncio.fixture(autouse=True)
     async def init(self) -> None:
         """Global variables for add like tweet."""
-        self.uri: Path = Path(URI_API_TWEETS)
+        self.uri: str = URI_API_TWEETS
         self.uri_end: str = "likes"
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -211,7 +216,11 @@ class TestAPIAddLikeTweetPostEndpoint:
             assert user
 
             res: Response = await client.post(
-                str(self.uri / str(tweet.id) / self.uri_end),
+                URI_API_SLASH.join([
+                    self.uri,
+                    str(tweet.id),
+                    self.uri_end
+                ]),
                 headers={
                     API_KEY: user.api_key
                 }
@@ -238,7 +247,11 @@ class TestAPIAddLikeTweetPostEndpoint:
             await session.commit()
 
             res: Response = await client.post(
-                str(self.uri / str(tweet.id) / self.uri_end),
+                URI_API_SLASH.join([
+                    self.uri,
+                    str(tweet.id),
+                    self.uri_end
+                ]),
                 headers={
                     API_KEY: str(faker.uuid4())
                 }
@@ -256,7 +269,7 @@ class TestAPIDeleteLikeTweetDeleteEndpoint:
     @pytest_asyncio.fixture(autouse=True)
     async def init(self) -> None:
         """Global variables for delete like tweet."""
-        self.uri: Path = Path(URI_API_TWEETS)
+        self.uri: str = URI_API_TWEETS
         self.uri_end: str = "likes"
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -282,7 +295,11 @@ class TestAPIDeleteLikeTweetDeleteEndpoint:
             assert user
 
             res: Response = await client.post(
-                str(self.uri / str(tweet.id) / self.uri_end),
+                URI_API_SLASH.join([
+                    self.uri,
+                    str(tweet.id),
+                    self.uri_end
+                ]),
                 headers={
                     API_KEY: user.api_key
                 }
@@ -293,7 +310,11 @@ class TestAPIDeleteLikeTweetDeleteEndpoint:
             assert res_data[RESULT_KEY]
 
             res = await client.delete(
-                str(self.uri / str(tweet.id) / self.uri_end),
+                URI_API_SLASH.join([
+                    self.uri,
+                    str(tweet.id),
+                    self.uri_end
+                ]),
                 headers={
                     API_KEY: user.api_key
                 }
@@ -320,7 +341,11 @@ class TestAPIDeleteLikeTweetDeleteEndpoint:
             await session.commit()
 
             res: Response = await client.delete(
-                str(self.uri / str(tweet.id) / self.uri_end),
+                URI_API_SLASH.join([
+                    self.uri,
+                    str(tweet.id),
+                    self.uri_end
+                ]),
                 headers={
                     API_KEY: str(faker.uuid4())
                 }
@@ -338,7 +363,7 @@ class TestAPIGetTweetsGetEndpoint:
     @pytest_asyncio.fixture(autouse=True)
     async def init(self) -> None:
         """Global variables for get tweets."""
-        self.uri: Path = Path(URI_API_TWEETS)
+        self.uri: str = URI_API_TWEETS
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_get_tweets(
