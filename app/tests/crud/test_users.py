@@ -17,7 +17,8 @@ from app.crud.users import (
     get_user_by_id,
     add_follow,
     get_follow,
-    delete_follow
+    delete_follow,
+    get_following
 )
 from app.models.users import User
 from app.models.follows import Follow
@@ -288,3 +289,43 @@ async def test_delete_follow(
             )
         )
         assert follow is None
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_get_following(faker: Faker) -> None:
+    """Test get following."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        user_follower: User | None = await create_user(
+            session,
+            User(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            )
+        )
+        assert user_follower
+
+        user_following: User | None = await create_user(
+            session,
+            User(
+                name=faker.name(),
+                api_key=str(faker.uuid4())
+            )
+        )
+        assert user_following
+
+        follow: Follow | None = await add_follow(
+            session,
+            Follow(
+                user_id_follower=user_follower.id,
+                user_id_following=user_following.id
+            )
+        )
+        assert follow
+
+        following: list[Follow] = await get_following(
+            session,
+            user_follower.id
+        )
+        assert len(following)

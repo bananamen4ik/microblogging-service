@@ -1,5 +1,7 @@
 """Describe Media model in database."""
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import (
     Integer,
     Text,
@@ -7,10 +9,14 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import (
     Mapped,
-    mapped_column
+    mapped_column,
+    relationship
 )
 
 from app.database import Base
+
+if TYPE_CHECKING:  # pragma: no cover
+    from app.models.tweets import Tweet
 
 
 class Media(Base):
@@ -38,3 +44,13 @@ class Media(Base):
         ForeignKey("tweets.id", ondelete="CASCADE"),
         nullable=True
     )
+
+    tweet: Mapped["Tweet"] = relationship(
+        "Tweet",
+        back_populates="medias_objs"
+    )
+
+    @property
+    def filename(self):
+        """Get media filename."""
+        return f"{self.id}.{self.ext}"

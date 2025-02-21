@@ -118,3 +118,15 @@ async def delete_follow(
     except SQLAlchemyError:  # pragma: no cover
         return False
     return True
+
+
+async def get_following(
+        session: AsyncSession,
+        user_id: int
+) -> list[Follow]:
+    """Get user following."""
+    return list(await session.scalars(
+        select(Follow).where(
+            Follow.user_id_follower == user_id
+        )
+    ))

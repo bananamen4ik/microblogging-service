@@ -22,13 +22,15 @@ from app.crud.tweets import (
 )
 from app.schemas.tweets import (
     TweetSchema,
-    TweetIn
+    TweetIn,
+    TweetOut
 )
 from app.models.users import User
 from app.models.likes import Like
 from app.logic.tweets import (
     create_tweet,
-    delete_tweet
+    delete_tweet,
+    get_tweets
 )
 from app.config import (
     RESULT_KEY,
@@ -186,4 +188,32 @@ async def api_delete_like_tweet(
 
     return {
         RESULT_KEY: True
+    }
+
+
+@router.get("")
+async def api_get_tweets(
+        session: Annotated[AsyncSession, Depends(get_session)],
+        api_key: Annotated[str, Header()]
+) -> dict:
+    """Get tweets."""
+    user_model: User | None = await get_user_by_api_key(
+        session,
+        api_key
+    )
+
+    if user_model is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=HTTP_EXCEPTION_USER_API_KEY_INVALID
+        )
+
+    tweets: list[TweetOut] = await get_tweets(
+        session,
+        user_model.id
+    )
+
+    return {
+        RESULT_KEY: True,
+        "tweets": tweets
     }

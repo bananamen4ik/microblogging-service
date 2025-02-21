@@ -20,7 +20,8 @@ from app.crud.tweets import (
     delete_tweet_by_id,
     add_like_tweet,
     delete_like_tweet,
-    get_tweet_like
+    get_tweet_like,
+    get_tweets_by_user_ids
 )
 from app.crud.users import create_user
 from app.crud.medias import (
@@ -339,3 +340,22 @@ async def test_get_tweet_like(faker: Faker) -> None:
             like_res
         )
         assert like_res
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_get_tweets_by_user_ids(faker: Faker) -> None:
+    """Test get tweets by user ids."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        tweet: Tweet = await get_tweet(
+            session,
+            faker
+        )
+
+        tweets: list[Tweet] = await get_tweets_by_user_ids(
+            session,
+            [tweet.user_id]
+        )
+
+        assert len(tweets)

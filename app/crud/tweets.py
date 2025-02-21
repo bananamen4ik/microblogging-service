@@ -126,3 +126,19 @@ async def get_tweet_like(
             Like.tweet_id == like.tweet_id
         )
     )
+
+
+async def get_tweets_by_user_ids(
+        session: AsyncSession,
+        user_ids: list[int]
+) -> list[Tweet]:
+    """Get tweets by user ids."""
+    return list(await session.scalars(
+        select(
+            Tweet
+        ).where(
+            Tweet.user_id.in_(user_ids)
+        ).order_by(
+            Tweet.id.desc()
+        )
+    ))

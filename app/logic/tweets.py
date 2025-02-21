@@ -8,8 +8,15 @@ from app.schemas.tweets import (
     TweetIn
 )
 from app.schemas.medias import MediaSchema
+from app.schemas.tweets import (
+    TweetOut,
+    TweetAuthor,
+    TweetLike
+)
 from app.models.tweets import Tweet
 from app.models.medias import Media
+from app.models.follows import Follow
+from app.models.users import User
 from app.crud.medias import (
     get_media_by_id,
     add_tweet_id_to_medias
@@ -17,8 +24,10 @@ from app.crud.medias import (
 from app.crud.tweets import (
     create_tweet as crud_create_tweet,
     get_tweet_by_id,
-    delete_tweet_by_id
+    delete_tweet_by_id,
+    get_tweets_by_user_ids
 )
+from app.crud.users import get_following
 from app.logic.medias import (
     delete_media_files,
     get_media_filename_by_id
@@ -129,3 +138,67 @@ async def delete_tweet(
     )
 
     return True
+
+
+async def get_tweets(
+        session: AsyncSession,
+        user_id: int
+) -> list[TweetOut]:
+    """Get tweets."""
+    users_following: list[Follow] = await get_following(
+        session,
+        user_id
+    )
+    following_ids: list[int] = [
+        following.user_id_following
+        for following in users_following
+    ]
+
+    following_ids.append(user_id)
+
+    tweets: list[Tweet] = await get_tweets_by_user_ids(
+        session,
+        following_ids
+    )
+    return await get_tweets_out(tweets)
+
+
+async def get_tweets_out(
+        tweets: list[Tweet]
+) -> list[TweetOut]:
+    """List tweets to list tweets_out."""
+    tweet: Tweet
+    tweets_out: list[TweetOut] = []
+
+    for tweet in tweets:
+        tweet_user: User = await tweet.awaitable_attrs.user
+        tweet_attachments: list[str] = [
+            f"/images/{media_filename}"
+            for media_filename in await (
+                tweet.awaitable_attrs.medias_filenames
+            )
+        ]
+        tweet_likes: list[TweetLike] = [
+            TweetLike(
+                user_id=like_user_data.id,
+                name=like_user_data.name
+            )
+            for like_user_data in await (
+                tweet.awaitable_attrs.likes_users_data
+            )
+        ]
+
+        tweets_out.append(
+            TweetOut(
+                id=tweet.id,
+                content=tweet.main_content,
+                attachments=tweet_attachments,
+                author=TweetAuthor(
+                    id=tweet_user.id,
+                    name=tweet_user.name
+                ),
+                likes=tweet_likes
+            )
+        )
+
+    return tweets_out

@@ -14,17 +14,25 @@ from app.tests.crud.test_tweets import get_tweet
 from app.logic.tweets import (
     create_tweet,
     get_new_medias,
-    delete_tweet
+    delete_tweet,
+    get_tweets,
+    get_tweets_out
 )
 from app.schemas.tweets import (
     TweetSchema,
-    TweetIn
+    TweetIn,
+    TweetOut
 )
 from app.crud.users import create_user
 from app.crud.medias import create_media
+from app.crud.tweets import (
+    add_like_tweet,
+    get_tweets_by_user_ids
+)
 from app.models.users import User
 from app.models.medias import Media
 from app.models.tweets import Tweet
+from app.models.likes import Like
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -137,3 +145,68 @@ async def test_delete_tweet_media_id_invalid(faker: Faker) -> None:
             tweet.id
         )
         assert not delete_res
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_get_tweets(faker: Faker) -> None:
+    """Test get tweets."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        tweet: Tweet = await get_tweet(
+            session,
+            faker
+        )
+
+        like: Like | None = await add_like_tweet(
+            session,
+            Like(
+                user_id=tweet.user_id,
+                tweet_id=tweet.id
+            )
+        )
+        assert like
+
+        tweets: list[TweetOut] = await get_tweets(
+            session,
+            tweet.user_id
+        )
+        assert all([
+            len(tweets),
+            len(tweets[0].attachments),
+            len(tweets[0].likes)
+        ])
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_get_tweets_out(faker: Faker) -> None:
+    """Test tweets to tweets out schema."""
+    session: AsyncSession
+
+    async with get_session() as session:
+        tweet: Tweet = await get_tweet(
+            session,
+            faker
+        )
+
+        like: Like | None = await add_like_tweet(
+            session,
+            Like(
+                user_id=tweet.user_id,
+                tweet_id=tweet.id
+            )
+        )
+        assert like
+
+        tweets: list[Tweet] = await get_tweets_by_user_ids(
+            session,
+            [tweet.user_id]
+        )
+        assert len(tweets)
+
+        tweets_out: list[TweetOut] = await get_tweets_out(tweets)
+        assert all([
+            len(tweets_out),
+            len(tweets_out[0].attachments),
+            len(tweets_out[0].likes)
+        ])

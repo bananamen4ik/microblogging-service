@@ -330,3 +330,65 @@ class TestAPIDeleteLikeTweetDeleteEndpoint:
             assert res_data
             assert not res_data[RESULT_KEY]
             assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+
+class TestAPIGetTweetsGetEndpoint:
+    """Test get tweets API get endpoint."""
+
+    @pytest_asyncio.fixture(autouse=True)
+    async def init(self) -> None:
+        """Global variables for get tweets."""
+        self.uri: Path = Path(URI_API_TWEETS)
+
+    @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+    async def test_get_tweets(
+            self,
+            client: AsyncClient,
+            faker: Faker
+    ) -> None:
+        """Test get tweets."""
+        session: AsyncSession
+
+        async with get_session() as session:
+            tweet: Tweet = await get_tweet(
+                session,
+                faker
+            )
+            await session.commit()
+
+            user: User | None = await get_user_by_id(
+                session,
+                tweet.user_id
+            )
+            assert user
+
+            res: Response = await client.get(
+                str(self.uri),
+                headers={
+                    API_KEY: user.api_key
+                }
+            )
+            res_data: Any = res.json()
+
+            assert res_data
+            assert res_data[RESULT_KEY]
+            assert len(res_data["tweets"])
+
+    @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+    async def test_get_tweets_user_invalid(
+            self,
+            client: AsyncClient,
+            faker: Faker
+    ) -> None:
+        """Test get tweets with user invalid."""
+        res: Response = await client.get(
+            str(self.uri),
+            headers={
+                API_KEY: str(faker.uuid4())
+            }
+        )
+        res_data: Any = res.json()
+
+        assert res_data
+        assert not res_data[RESULT_KEY]
+        assert res.status_code == status.HTTP_400_BAD_REQUEST

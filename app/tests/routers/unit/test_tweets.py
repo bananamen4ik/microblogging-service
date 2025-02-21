@@ -18,7 +18,8 @@ from app.routers.tweets import (
     api_create_tweet,
     api_delete_tweet,
     api_add_like_tweet,
-    api_delete_like_tweet
+    api_delete_like_tweet,
+    api_get_tweets
 )
 from app.models.users import User
 from app.models.tweets import Tweet
@@ -239,4 +240,39 @@ async def test_api_delete_like_tweet_user_invalid(faker: Faker) -> None:
                 session,
                 str(faker.uuid4()),
                 tweet.id
+            )
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_api_get_tweets(faker: Faker) -> None:
+    """Test api get tweets."""
+    session: AsyncSession
+    async with get_session() as session:
+        tweet: Tweet = await get_tweet(
+            session,
+            faker
+        )
+        user: User | None = await get_user_by_id(
+            session,
+            tweet.user_id
+        )
+        assert user
+
+        res: dict = await api_get_tweets(
+            session,
+            user.api_key
+        )
+        assert res[RESULT_KEY]
+        assert len(res["tweets"])
+
+
+@pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
+async def test_api_get_tweets_user_invalid(faker: Faker) -> None:
+    """Test api get tweets with user invalid."""
+    session: AsyncSession
+    async with get_session() as session:
+        with pytest.raises(HTTPException):
+            await api_get_tweets(
+                session,
+                str(faker.uuid4())
             )

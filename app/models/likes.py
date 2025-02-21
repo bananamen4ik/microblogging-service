@@ -1,5 +1,7 @@
 """Describe Like model in database."""
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import (
     Integer,
     ForeignKey,
@@ -7,10 +9,15 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import (
     Mapped,
-    mapped_column
+    mapped_column,
+    relationship
 )
 
 from app.database import Base
+
+if TYPE_CHECKING:  # pragma: no cover
+    from app.models.tweets import Tweet
+    from app.models.users import User
 
 
 class Like(Base):
@@ -40,4 +47,13 @@ class Like(Base):
         Integer,
         ForeignKey("tweets.id", ondelete="CASCADE"),
         nullable=False
+    )
+
+    tweet: Mapped["Tweet"] = relationship(
+        "Tweet",
+        back_populates="likes"
+    )
+    user: Mapped["User"] = relationship(
+        "User",
+        back_populates="likes"
     )
