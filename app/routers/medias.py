@@ -17,12 +17,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_session
 from app.crud.users import get_user_by_api_key
 from app.models.users import User
-from app.schemas.medias import MediaSchema
-from app.logic.medias import upload_image
-from app.config import (
-    RESULT_KEY,
-    HTTP_EXCEPTION_USER_API_KEY_INVALID
+from app.schemas.medias import (
+    MediaSchema,
+    MediaUploadImageResponse
 )
+from app.logic.medias import upload_image
+from app.config import HTTP_EXCEPTION_USER_API_KEY_INVALID
 
 router: APIRouter = APIRouter(prefix="/api/medias")
 
@@ -32,7 +32,7 @@ async def api_upload_image(
         session: Annotated[AsyncSession, Depends(get_session)],
         api_key: Annotated[str, Header()],
         image_file: Annotated[UploadFile, File(alias="file")]
-) -> dict:
+) -> MediaUploadImageResponse:
     """Upload image."""
     user_model: User | None = await get_user_by_api_key(
         session,
@@ -57,7 +57,7 @@ async def api_upload_image(
             detail=HTTP_EXCEPTION_USER_API_KEY_INVALID
         )
 
-    return {
-        RESULT_KEY: True,
-        "media_id": image.id
-    }
+    return MediaUploadImageResponse(
+        result=True,
+        media_id=image.id
+    )

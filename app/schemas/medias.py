@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.base import ResultResponse
+
 
 class MediaBase(BaseModel):
     """
@@ -29,3 +31,9 @@ class MediaSchema(MediaBase):
     """
 
     id: int
+
+
+class MediaUploadImageResponse(ResultResponse):
+    """Schema for upload image API response."""
+
+    media_id: int

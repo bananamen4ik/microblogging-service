@@ -31,7 +31,6 @@ from app.dependencies import get_session as dep_get_session
 from app.config import settings
 
 LOOP_SCOPE_SESSION: str = "session"
-RESULT_KEY: str = "result"
 API_KEY: str = "api-key"
 COMMIT_PARAMETRIZE: str = "commit"
 

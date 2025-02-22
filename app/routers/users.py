@@ -26,13 +26,12 @@ from app.crud.users import (
 from app.schemas.users import (
     UserInCreate,
     UserSchema,
-    UserOut
+    UserOut,
+    UserGetProfileResponse
 )
+from app.schemas.base import ResultResponse
 from app.models.users import User
-from app.config import (
-    RESULT_KEY,
-    HTTP_EXCEPTION_USER_API_KEY_INVALID
-)
+from app.config import HTTP_EXCEPTION_USER_API_KEY_INVALID
 from app.logic.users import (
     add_follow,
     get_profile
@@ -80,7 +79,7 @@ async def api_create_user(
 async def api_get_me(
         session: Annotated[AsyncSession, Depends(get_session)],
         api_key: Annotated[str, Header()]
-) -> dict:
+) -> UserGetProfileResponse:
     """Get user own profile."""
     user_model: User | None = await get_user_by_api_key(
         session,
@@ -95,10 +94,10 @@ async def api_get_me(
 
     profile: UserOut = await get_profile(user_model)
 
-    return {
-        RESULT_KEY: True,
-        "user": profile
-    }
+    return UserGetProfileResponse(
+        result=True,
+        user=profile
+    )
 
 
 @router.post("/{user_id}/follow")
@@ -106,7 +105,7 @@ async def api_add_follow(
         session: Annotated[AsyncSession, Depends(get_session)],
         api_key: Annotated[str, Header()],
         user_id: Annotated[int, Path()]
-) -> dict:
+) -> ResultResponse:
     """Add follow."""
     user_model: User | None = await get_user_by_api_key(
         session,
@@ -131,9 +130,9 @@ async def api_add_follow(
             detail="Couldn't follow."
         )
 
-    return {
-        RESULT_KEY: True
-    }
+    return ResultResponse(
+        result=True
+    )
 
 
 @router.delete("/{user_id}/follow")
@@ -141,7 +140,7 @@ async def api_delete_follow(
         session: Annotated[AsyncSession, Depends(get_session)],
         api_key: Annotated[str, Header()],
         user_id: Annotated[int, Path()]
-) -> dict:
+) -> ResultResponse:
     """Delete follow."""
     user_model: User | None = await get_user_by_api_key(
         session,
@@ -167,16 +166,16 @@ async def api_delete_follow(
             detail="Couldn't delete follow."
         )
 
-    return {
-        RESULT_KEY: True
-    }
+    return ResultResponse(
+        result=True
+    )
 
 
 @router.get("/{user_id}")
 async def api_get_profile_by_id(
         session: Annotated[AsyncSession, Depends(get_session)],
         user_id: Annotated[int, Path()]
-) -> dict:
+) -> UserGetProfileResponse:
     """Get user profile by id."""
     user_model: User | None = await get_user_by_id(
         session,
@@ -191,7 +190,7 @@ async def api_get_profile_by_id(
 
     profile: UserOut = await get_profile(user_model)
 
-    return {
-        RESULT_KEY: True,
-        "user": profile
-    }
+    return UserGetProfileResponse(
+        result=True,
+        user=profile
+    )

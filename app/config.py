@@ -11,8 +11,21 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-RESULT_KEY: str = "result"
+from fastapi import status
+
+from app.schemas.exceptions import MainException
+
 HTTP_EXCEPTION_USER_API_KEY_INVALID: str = "The user was not found by api_key."
+
+router_responses: dict = {
+    status.HTTP_400_BAD_REQUEST: {
+        "model": MainException
+    },
+    status.HTTP_422_UNPROCESSABLE_ENTITY: {
+        "model": MainException,
+        "description": "Validation Error"
+    }
+}
 
 
 class Settings(BaseSettings):

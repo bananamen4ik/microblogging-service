@@ -1,7 +1,5 @@
 """Test medias routers module."""
 
-from typing import Any
-
 import pytest
 
 import pytest_asyncio
@@ -19,12 +17,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.tests.testing_utils import (
     LOOP_SCOPE_SESSION,
-    RESULT_KEY,
     API_KEY,
     get_session,
     get_example_image_uploadfile
 )
 from app.schemas.users import UserInCreate
+from app.schemas.medias import MediaUploadImageResponse
+from app.schemas.exceptions import MainException
 from app.crud.users import create_user
 from app.models.users import User
 
@@ -69,12 +68,14 @@ class TestAPIUploadImagePostEndpoint:
                     )
                 }
             )
-            res_data: Any = res.json()
+            res_data: MediaUploadImageResponse = (
+                MediaUploadImageResponse.model_validate(res.json())
+            )
 
             assert all([
                 res_data,
-                res_data[RESULT_KEY],
-                res_data["media_id"] == 1
+                res_data.result,
+                res_data.media_id == 1
             ])
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -103,11 +104,8 @@ class TestAPIUploadImagePostEndpoint:
             }
         )
 
-        res_data: Any = res.json()
-        assert all([
-            res_data,
-            not res_data[RESULT_KEY]
-        ])
+        res_data: MainException = MainException.model_validate(res.json())
+        assert not res_data.result
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_upload_image_not_user(self, client: AsyncClient) -> None:
@@ -127,8 +125,5 @@ class TestAPIUploadImagePostEndpoint:
             }
         )
 
-        res_data: Any = res.json()
-        assert all([
-            res_data,
-            not res_data[RESULT_KEY]
-        ])
+        res_data: MainException = MainException.model_validate(res.json())
+        assert not res_data.result

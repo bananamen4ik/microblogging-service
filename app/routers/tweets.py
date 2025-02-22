@@ -23,8 +23,11 @@ from app.crud.tweets import (
 from app.schemas.tweets import (
     TweetSchema,
     TweetIn,
-    TweetOut
+    TweetOut,
+    TweetCreateTweetResponse,
+    TweetGetTweetsResponse
 )
+from app.schemas.base import ResultResponse
 from app.models.users import User
 from app.models.likes import Like
 from app.logic.tweets import (
@@ -32,10 +35,7 @@ from app.logic.tweets import (
     delete_tweet,
     get_tweets
 )
-from app.config import (
-    RESULT_KEY,
-    HTTP_EXCEPTION_USER_API_KEY_INVALID
-)
+from app.config import HTTP_EXCEPTION_USER_API_KEY_INVALID
 
 router: APIRouter = APIRouter(prefix="/api/tweets")
 
@@ -46,7 +46,7 @@ async def api_create_tweet(
         api_key: Annotated[str, Header()],
         tweet_data: Annotated[str, Body()],
         tweet_media_ids: Annotated[list[int] | None, Body()] = None
-) -> dict:
+) -> TweetCreateTweetResponse:
     """Create tweet."""
     user_model: User | None = await get_user_by_api_key(
         session,
@@ -74,10 +74,10 @@ async def api_create_tweet(
             detail="Tweet not created."
         )
 
-    return {
-        RESULT_KEY: True,
-        "tweet_id": tweet.id
-    }
+    return TweetCreateTweetResponse(
+        result=True,
+        tweet_id=tweet.id
+    )
 
 
 @router.delete("/{tweet_id}")
@@ -85,7 +85,7 @@ async def api_delete_tweet(
         session: Annotated[AsyncSession, Depends(get_session)],
         api_key: Annotated[str, Header()],
         tweet_id: Annotated[int, Path()]
-) -> dict:
+) -> ResultResponse:
     """Delete tweet."""
     user_model: User | None = await get_user_by_api_key(
         session,
@@ -110,9 +110,9 @@ async def api_delete_tweet(
             detail="The tweet cannot be deleted."
         )
 
-    return {
-        RESULT_KEY: True
-    }
+    return ResultResponse(
+        result=True
+    )
 
 
 @router.post("/{tweet_id}/likes")
@@ -120,7 +120,7 @@ async def api_add_like_tweet(
         session: Annotated[AsyncSession, Depends(get_session)],
         api_key: Annotated[str, Header()],
         tweet_id: Annotated[int, Path()]
-) -> dict:
+) -> ResultResponse:
     """Add like to tweet."""
     user_model: User | None = await get_user_by_api_key(
         session,
@@ -148,9 +148,9 @@ async def api_add_like_tweet(
             detail="Couldn't like it."
         )
 
-    return {
-        RESULT_KEY: True
-    }
+    return ResultResponse(
+        result=True
+    )
 
 
 @router.delete("/{tweet_id}/likes")
@@ -158,7 +158,7 @@ async def api_delete_like_tweet(
         session: Annotated[AsyncSession, Depends(get_session)],
         api_key: Annotated[str, Header()],
         tweet_id: Annotated[int, Path()]
-) -> dict:
+) -> ResultResponse:
     """Delete like in tweet."""
     user_model: User | None = await get_user_by_api_key(
         session,
@@ -186,16 +186,16 @@ async def api_delete_like_tweet(
             detail="Couldn't delete a like."
         )
 
-    return {
-        RESULT_KEY: True
-    }
+    return ResultResponse(
+        result=True
+    )
 
 
 @router.get("")
 async def api_get_tweets(
         session: Annotated[AsyncSession, Depends(get_session)],
         api_key: Annotated[str, Header()]
-) -> dict:
+) -> TweetGetTweetsResponse:
     """Get tweets."""
     user_model: User | None = await get_user_by_api_key(
         session,
@@ -213,7 +213,7 @@ async def api_get_tweets(
         user_model.id
     )
 
-    return {
-        RESULT_KEY: True,
-        "tweets": tweets
-    }
+    return TweetGetTweetsResponse(
+        result=True,
+        tweets=tweets
+    )

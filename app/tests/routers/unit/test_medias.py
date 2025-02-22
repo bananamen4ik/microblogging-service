@@ -13,13 +13,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.tests.testing_utils import (
     LOOP_SCOPE_SESSION,
-    RESULT_KEY,
     get_session,
     get_example_image_uploadfile
 )
 from app.crud.users import create_user
 from app.routers.medias import api_upload_image
 from app.models.users import User
+from app.schemas.medias import MediaUploadImageResponse
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -37,14 +37,14 @@ async def test_api_upload_image(faker: Faker) -> None:
         assert user_model
 
         image_file: UploadFile = await get_example_image_uploadfile()
-        new_media: dict = await api_upload_image(
+        new_media: MediaUploadImageResponse = await api_upload_image(
             session,
             user_model.api_key,
             image_file
         )
         assert all([
-            new_media[RESULT_KEY],
-            new_media["media_id"] == 1
+            new_media.result,
+            new_media.media_id == 1
         ])
 
 

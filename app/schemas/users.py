@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.base import ResultResponse
+
 
 class UserBase(BaseModel):
     """
@@ -78,3 +80,9 @@ class UserOut(BaseModel):
     name: str
     followers: list[UserFollowers]
     following: list[UserFollowing]
+
+
+class UserGetProfileResponse(ResultResponse):
+    """Schema for get profile response."""
+
+    user: UserOut

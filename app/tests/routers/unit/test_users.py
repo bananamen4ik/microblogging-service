@@ -18,12 +18,13 @@ from app.routers.users import (
 from app.schemas.users import (
     UserInCreate,
     UserSchema,
-    UserOut
+    UserOut,
+    UserGetProfileResponse
 )
+from app.schemas.base import ResultResponse
 from app.tests.testing_utils import (
     get_session,
-    LOOP_SCOPE_SESSION,
-    RESULT_KEY
+    LOOP_SCOPE_SESSION
 )
 
 
@@ -73,14 +74,14 @@ async def test_api_get_me(faker: Faker) -> None:
             new_user
         )
 
-        res_data: dict = await api_get_me(
+        res_data: UserGetProfileResponse = await api_get_me(
             session,
             new_user.api_key
         )
-        res_data_user: dict = res_data["user"]
+        res_data_user: UserOut = res_data.user
 
         assert all([
-            res_data[RESULT_KEY] is True,
+            res_data.result is True,
             isinstance(res_data_user, UserOut)
         ])
 
@@ -112,12 +113,12 @@ async def test_api_add_follow(faker: Faker) -> None:
             )
         )
 
-        follow: dict = await api_add_follow(
+        follow: ResultResponse = await api_add_follow(
             session,
             user_follower.api_key,
             user_following.id
         )
-        assert follow[RESULT_KEY]
+        assert follow.result
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -184,19 +185,19 @@ async def test_api_delete_follow(faker: Faker) -> None:
             )
         )
 
-        follow: dict = await api_add_follow(
+        follow: ResultResponse = await api_add_follow(
             session,
             user_follower.api_key,
             user_following.id
         )
-        assert follow[RESULT_KEY]
+        assert follow.result
 
         follow = await api_delete_follow(
             session,
             user_follower.api_key,
             user_following.id
         )
-        assert follow[RESULT_KEY]
+        assert follow.result
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -229,14 +230,14 @@ async def test_api_get_profile_by_id(faker: Faker) -> None:
             new_user
         )
 
-        res_data: dict = await api_get_profile_by_id(
+        res_data: UserGetProfileResponse = await api_get_profile_by_id(
             session,
             user.id
         )
-        res_data_user: dict = res_data["user"]
+        res_data_user: UserOut = res_data.user
 
         assert all([
-            res_data[RESULT_KEY] is True,
+            res_data.result is True,
             isinstance(res_data_user, UserOut)
         ])
 

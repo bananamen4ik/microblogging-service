@@ -1,7 +1,5 @@
 """Test tweets routers module."""
 
-from typing import Any
-
 import pytest
 
 import pytest_asyncio
@@ -20,7 +18,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.tests.testing_utils import (
     LOOP_SCOPE_SESSION,
     API_KEY,
-    RESULT_KEY,
     get_session
 )
 from app.tests.crud.test_tweets import get_tweet
@@ -31,6 +28,12 @@ from app.crud.users import (
     get_user_by_id
 )
 from app.schemas.users import UserInCreate
+from app.schemas.tweets import (
+    TweetGetTweetsResponse,
+    TweetCreateTweetResponse
+)
+from app.schemas.base import ResultResponse
+from app.schemas.exceptions import MainException
 
 URI_API_TWEETS: str = "/api/tweets"
 URI_API_SLASH: str = "/"
@@ -75,12 +78,13 @@ class TestAPICreateTweetPostEndpoint:
                     "tweet_data": faker.text()
                 }
             )
-            res_data: Any = res.json()
+            res_data: TweetCreateTweetResponse = (
+                TweetCreateTweetResponse.model_validate(res.json())
+            )
 
-            assert res_data
             assert all([
-                res_data[RESULT_KEY],
-                res_data["tweet_id"] == 1
+                res_data.result,
+                res_data.tweet_id == 1
             ])
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -99,11 +103,9 @@ class TestAPICreateTweetPostEndpoint:
                 "tweet_data": faker.text()
             }
         )
-        res_data: Any = res.json()
-
-        assert res_data
+        res_data: MainException = MainException.model_validate(res.json())
         assert all([
-            not res_data[RESULT_KEY],
+            not res_data.result,
             res.status_code == status.HTTP_400_BAD_REQUEST
         ])
 
@@ -147,10 +149,10 @@ class TestAPIDeleteTweetDeleteEndpoint:
                     API_KEY: user.api_key
                 }
             )
-            res_data: Any = res.json()
-
-            assert res_data
-            assert res_data[RESULT_KEY]
+            res_data: ResultResponse = (
+                ResultResponse.model_validate(res.json())
+            )
+            assert res_data.result
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_delete_tweet_user_invalid(
@@ -177,10 +179,8 @@ class TestAPIDeleteTweetDeleteEndpoint:
                     API_KEY: str(faker.uuid4())
                 }
             )
-            res_data: Any = res.json()
-
-            assert res_data
-            assert not res_data[RESULT_KEY]
+            res_data: MainException = MainException.model_validate(res.json())
+            assert not res_data.result
             assert res.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -225,10 +225,10 @@ class TestAPIAddLikeTweetPostEndpoint:
                     API_KEY: user.api_key
                 }
             )
-            res_data: Any = res.json()
-
-            assert res_data
-            assert res_data[RESULT_KEY]
+            res_data: ResultResponse = (
+                ResultResponse.model_validate(res.json())
+            )
+            assert res_data.result
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_add_like_tweet_user_invalid(
@@ -256,10 +256,8 @@ class TestAPIAddLikeTweetPostEndpoint:
                     API_KEY: str(faker.uuid4())
                 }
             )
-            res_data: Any = res.json()
-
-            assert res_data
-            assert not res_data[RESULT_KEY]
+            res_data: MainException = MainException.model_validate(res.json())
+            assert not res_data.result
             assert res.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -304,10 +302,10 @@ class TestAPIDeleteLikeTweetDeleteEndpoint:
                     API_KEY: user.api_key
                 }
             )
-            res_data: Any = res.json()
-
-            assert res_data
-            assert res_data[RESULT_KEY]
+            res_data: ResultResponse = (
+                ResultResponse.model_validate(res.json())
+            )
+            assert res_data.result
 
             res = await client.delete(
                 URI_API_SLASH.join([
@@ -319,10 +317,8 @@ class TestAPIDeleteLikeTweetDeleteEndpoint:
                     API_KEY: user.api_key
                 }
             )
-            res_data = res.json()
-
-            assert res_data
-            assert res_data[RESULT_KEY]
+            res_data = ResultResponse.model_validate(res.json())
+            assert res_data.result
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_delete_like_tweet_user_invalid(
@@ -350,10 +346,8 @@ class TestAPIDeleteLikeTweetDeleteEndpoint:
                     API_KEY: str(faker.uuid4())
                 }
             )
-            res_data: Any = res.json()
-
-            assert res_data
-            assert not res_data[RESULT_KEY]
+            res_data: MainException = MainException.model_validate(res.json())
+            assert not res_data.result
             assert res.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -393,11 +387,11 @@ class TestAPIGetTweetsGetEndpoint:
                     API_KEY: user.api_key
                 }
             )
-            res_data: Any = res.json()
-
-            assert res_data
-            assert res_data[RESULT_KEY]
-            assert len(res_data["tweets"])
+            res_data: TweetGetTweetsResponse = (
+                TweetGetTweetsResponse.model_validate(res.json())
+            )
+            assert res_data.result
+            assert len(res_data.tweets)
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_get_tweets_user_invalid(
@@ -412,8 +406,6 @@ class TestAPIGetTweetsGetEndpoint:
                 API_KEY: str(faker.uuid4())
             }
         )
-        res_data: Any = res.json()
-
-        assert res_data
-        assert not res_data[RESULT_KEY]
+        res_data: MainException = MainException.model_validate(res.json())
+        assert not res_data.result
         assert res.status_code == status.HTTP_400_BAD_REQUEST

@@ -15,7 +15,10 @@ from fastapi.exceptions import RequestValidationError
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.config import settings
+from app.config import (
+    settings,
+    router_responses
+)
 from app.routers import (
     users,
     medias,
@@ -46,7 +49,8 @@ app: FastAPI = FastAPI(
     exception_handlers={
         StarletteHTTPException: http_exception_handler,
         RequestValidationError: validation_exception_handler
-    }
+    },
+    responses=router_responses
 )
 
 app.include_router(users.router)

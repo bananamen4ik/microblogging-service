@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.tests.testing_utils import (
     LOOP_SCOPE_SESSION,
-    RESULT_KEY,
     get_session
 )
 from app.tests.crud.test_tweets import get_tweet
@@ -27,6 +26,11 @@ from app.crud.users import (
     create_user,
     get_user_by_id
 )
+from app.schemas.tweets import (
+    TweetGetTweetsResponse,
+    TweetCreateTweetResponse
+)
+from app.schemas.base import ResultResponse
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -43,14 +47,14 @@ async def test_api_create_tweet(faker: Faker) -> None:
         )
         assert user
 
-        res: dict = await api_create_tweet(
+        res: TweetCreateTweetResponse = await api_create_tweet(
             session,
             user.api_key,
             tweet_data=faker.text()
         )
         assert all([
-            res[RESULT_KEY],
-            res["tweet_id"] == 1
+            res.result,
+            res.tweet_id == 1
         ])
 
 
@@ -82,12 +86,12 @@ async def test_api_delete_tweet(faker: Faker) -> None:
         )
         assert user
 
-        res: dict = await api_delete_tweet(
+        res: ResultResponse = await api_delete_tweet(
             session,
             user.api_key,
             tweet.id
         )
-        assert res[RESULT_KEY]
+        assert res.result
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -146,12 +150,12 @@ async def test_api_add_like_tweet(faker: Faker) -> None:
         )
         assert user
 
-        res: dict = await api_add_like_tweet(
+        res: ResultResponse = await api_add_like_tweet(
             session,
             user.api_key,
             tweet.id
         )
-        assert res[RESULT_KEY]
+        assert res.result
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -210,19 +214,19 @@ async def test_api_delete_like_tweet(faker: Faker) -> None:
         )
         assert user
 
-        res: dict = await api_add_like_tweet(
+        res: ResultResponse = await api_add_like_tweet(
             session,
             user.api_key,
             tweet.id
         )
-        assert res[RESULT_KEY]
+        assert res.result
 
         res = await api_delete_like_tweet(
             session,
             user.api_key,
             tweet.id
         )
-        assert res[RESULT_KEY]
+        assert res.result
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
@@ -258,12 +262,12 @@ async def test_api_get_tweets(faker: Faker) -> None:
         )
         assert user
 
-        res: dict = await api_get_tweets(
+        res: TweetGetTweetsResponse = await api_get_tweets(
             session,
             user.api_key
         )
-        assert res[RESULT_KEY]
-        assert len(res["tweets"])
+        assert res.result
+        assert len(res.tweets)
 
 
 @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)

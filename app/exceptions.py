@@ -6,6 +6,8 @@ from fastapi.responses import JSONResponse
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.schemas.exceptions import MainException
+
 
 async def http_exception_handler(
         _,
@@ -14,11 +16,11 @@ async def http_exception_handler(
     """Exception handler StarletteHTTPException."""
     return JSONResponse(
         status_code=exc.status_code,
-        content={
-            "result": False,
-            "error_type": type(exc).__name__,
-            "error_message": exc.detail
-        }
+        content=MainException(
+            result=False,
+            error_type=type(exc).__name__,
+            error_message=exc.detail
+        ).model_dump()
     )
 
 
@@ -31,9 +33,9 @@ async def validation_exception_handler(
 
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "result": False,
-            "error_type": type(exc).__name__,
-            "error_message": error["msg"]
-        }
+        content=MainException(
+            result=False,
+            error_type=type(exc).__name__,
+            error_message=error["msg"]
+        ).model_dump()
     )

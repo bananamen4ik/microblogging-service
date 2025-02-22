@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.base import ResultResponse
+
 
 class TweetBase(BaseModel):
     """
@@ -75,6 +77,18 @@ class TweetOut(BaseModel):
 
     id: int
     content: str  # noqa: WPS110
-    attachments: list[str] = []
+    attachments: list[str]
     author: TweetAuthor
-    likes: list[TweetLike] = []
+    likes: list[TweetLike]
+
+
+class TweetCreateTweetResponse(ResultResponse):
+    """Schema for create tweet API response."""
+
+    tweet_id: int
+
+
+class TweetGetTweetsResponse(ResultResponse):
+    """Schema for get tweets API response."""
+
+    tweets: list[TweetOut]

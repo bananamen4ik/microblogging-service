@@ -21,11 +21,13 @@ from faker import Faker
 from app.schemas.users import (
     UserInCreate,
     UserSchema,
-    UserOut
+    UserOut,
+    UserGetProfileResponse
 )
+from app.schemas.base import ResultResponse
+from app.schemas.exceptions import MainException
 from app.tests.testing_utils import (
     LOOP_SCOPE_SESSION,
-    RESULT_KEY,
     API_KEY
 )
 from app.config import settings
@@ -158,13 +160,13 @@ class TestAPIGetMeGetEndpoint:
                 API_KEY: self.api_key
             }
         )
-        res_data: Any = res_get.json()
+        res_data: UserGetProfileResponse = (
+            UserGetProfileResponse.model_validate(res_get.json())
+        )
 
-        assert isinstance(res_data, dict)
-
-        res_data_user: UserOut = UserOut.model_validate(res_data["user"])
+        res_data_user: UserOut = UserOut.model_validate(res_data.user)
         assert all([
-            res_data[RESULT_KEY] is True,
+            res_data.result,
             res_data_user.id == 1
         ])
 
@@ -226,9 +228,8 @@ class TestAPIAddFollowPostEndpoint:
             }
         )
 
-        res_json: Any = res.json()
-        assert res_json
-        assert res_json[RESULT_KEY]
+        res_json: ResultResponse = ResultResponse.model_validate(res.json())
+        assert res_json.result
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_add_follow_user_invalid(
@@ -247,10 +248,9 @@ class TestAPIAddFollowPostEndpoint:
                 API_KEY: str(faker.uuid4())
             }
         )
-        res_json: Any = res.json()
+        res_json: MainException = MainException.model_validate(res.json())
+        assert not res_json.result
         assert res.status_code == status.HTTP_400_BAD_REQUEST
-        assert res_json
-        assert not res_json[RESULT_KEY]
 
 
 class TestAPIDeleteFollowDeleteEndpoint:
@@ -308,9 +308,8 @@ class TestAPIDeleteFollowDeleteEndpoint:
                 API_KEY: user_follower.api_key
             }
         )
-        res_json: Any = res.json()
-        assert res_json
-        assert res_json[RESULT_KEY]
+        res_json: ResultResponse = ResultResponse.model_validate(res.json())
+        assert res_json.result
 
     @pytest.mark.asyncio(loop_scope=LOOP_SCOPE_SESSION)
     async def test_delete_follow_user_invalid(
@@ -329,10 +328,9 @@ class TestAPIDeleteFollowDeleteEndpoint:
                 API_KEY: str(faker.uuid4())
             }
         )
-        res_json: Any = res.json()
+        res_json: MainException = MainException.model_validate(res.json())
+        assert not res_json.result
         assert res.status_code == status.HTTP_400_BAD_REQUEST
-        assert res_json
-        assert not res_json[RESULT_KEY]
 
 
 class TestAPIGetProfileByIdGetEndpoint:
@@ -358,13 +356,12 @@ class TestAPIGetProfileByIdGetEndpoint:
         )
 
         res_get: Response = await client.get(f"{self.uri}/1")
-        res_data: Any = res_get.json()
-
-        assert isinstance(res_data, dict)
-
-        res_data_user: UserOut = UserOut.model_validate(res_data["user"])
+        res_data: UserGetProfileResponse = (
+            UserGetProfileResponse.model_validate(res_get.json())
+        )
+        res_data_user: UserOut = UserOut.model_validate(res_data.user)
         assert all([
-            res_data[RESULT_KEY] is True,
+            res_data.result,
             res_data_user.id == 1
         ])
 
