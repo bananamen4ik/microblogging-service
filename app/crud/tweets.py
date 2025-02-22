@@ -3,7 +3,8 @@
 from sqlalchemy import (
     select,
     delete,
-    and_
+    and_,
+    func
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -136,9 +137,15 @@ async def get_tweets_by_user_ids(
     return list(await session.scalars(
         select(
             Tweet
+        ).outerjoin(
+            Like,
+            Like.tweet_id == Tweet.id
         ).where(
             Tweet.user_id.in_(user_ids)
+        ).group_by(
+            Tweet.id
         ).order_by(
+            func.count(Like.id).desc(),
             Tweet.id.desc()
         )
     ))
