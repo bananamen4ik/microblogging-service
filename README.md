@@ -1,7 +1,9 @@
 # Дипломный проект "Сервис микроблогов"
 
-![Example one.](https://i.imgur.com/rM5fTDx.png)
-![Example two.](https://i.imgur.com/qjAzAWD.png)
+<p align="center">
+  <img src="https://i.imgur.com/rM5fTDx.png" width="48%">
+  <img src="https://i.imgur.com/qjAzAWD.png" width="48%">
+</p>
 
 ## Описание сервиса
 
