@@ -1,0 +1,15 @@
+services:
+  nginx:
+    env_file: envs/prod/.env
+
+    ports:
+      - 80:80
+
+  fastapi:
+    env_file: envs/prod/.env
+
+    build:
+      dockerfile: docker/fastapi/Dockerfile.prod
+
+  postgresql:
+    env_file: envs/prod/.env

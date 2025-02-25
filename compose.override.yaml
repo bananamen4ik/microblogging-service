@@ -1,0 +1,22 @@
+services:
+  nginx:
+    env_file: envs/dev/.env
+
+    ports:
+      - 127.0.0.1:80:80
+
+    volumes:
+      - ./docker/nginx/config:/etc/nginx
+      - ./static:/usr/share/nginx/app
+
+  fastapi:
+    env_file: envs/dev/.env
+
+    build:
+      dockerfile: docker/fastapi/Dockerfile.dev
+
+    volumes:
+      - ./app:/opt/app
+
+  postgresql:
+    env_file: envs/dev/.env

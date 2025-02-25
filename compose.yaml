@@ -1,0 +1,44 @@
+services:
+  nginx:
+    container_name: nginx
+
+    build:
+      dockerfile: docker/nginx/Dockerfile
+
+    depends_on:
+      fastapi:
+        condition: service_started
+
+    volumes:
+      - images:/opt/images_volume
+
+    restart: unless-stopped
+
+  fastapi:
+    container_name: fastapi
+
+    depends_on:
+      postgresql:
+        condition: service_started
+
+    volumes:
+      - images:/opt/images_volume
+
+    restart: unless-stopped
+
+  postgresql:
+    container_name: postgresql
+
+    shm_size: 128mb
+
+    build:
+      dockerfile: docker/postgresql/Dockerfile
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  images:
